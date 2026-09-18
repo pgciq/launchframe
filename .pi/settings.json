@@ -1,0 +1,7 @@
+{
+  "packages": [
+    "npm:pi-codemie@1.0.24",
+    "npm:pi-dial@0.1.11",
+    "npm:pi-elitea@1.1.10"
+  ]
+}

@@ -1,0 +1,53 @@
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "launchframe"
+version = "0.1.0"
+description = "Review-gated toolkit for turning product assets into multilingual launch videos"
+requires-python = ">=3.10"
+dependencies = [
+    "mcp>=1.2.0,<2.0.0",
+    "websockets>=12.0",
+    "python-pptx>=1.0.0",
+    "azure-identity>=1.19.0",
+    "azure-mgmt-resource>=23.2.0",
+    "azure-mgmt-compute>=34.0.0",
+    "azure-mgmt-sql>=3.0.1",
+    "azure-mgmt-subscription>=3.1.1",
+    "azure-cognitiveservices-speech>=1.40.0",
+    "pypdf>=5.0.0",
+    "python-docx>=1.1.0",
+    "PyYAML>=6.0",
+    "openpyxl>=3.1.0",
+    "Pillow>=10.0.0",
+    "PyMuPDF>=1.24.0",
+    "pywin32>=306; sys_platform == 'win32'",
+    "keyring>=25.0",
+    # cryptography>=49 dropped macOS x86_64 (Intel) wheels; without this pin, pip
+    # falls back to building from source, which requires Rust and can hang/fail
+    # on machines without a Rust toolchain.
+    "cryptography<49; sys_platform == 'darwin' and platform_machine == 'x86_64'",
+]
+
+[project.scripts]
+launchframe-mcp = "server:main"
+launchframe = "cli:main"
+launchframe-gui = "gui:main"
+launchframe-web = "web_gui:main"
+ai-video-mcp = "server:main"
+ai-video = "cli:main"
+ai-video-gui = "gui:main"
+ai-video-web = "web_gui:main"
+
+[tool.setuptools]
+py-modules = ["server", "cli", "gui", "web_gui"]
+packages = ["video_mcp"]
+
+[tool.ruff]
+# Explicit rule selection pins CI to a stable rule set instead of drifting
+# whenever a newer ruff release changes its implicit defaults.
+
+[tool.ruff.lint]
+select = ["E4", "E7", "E9", "F"]

@@ -1,0 +1,12 @@
+[
+  {
+    "slide": 1,
+    "title": "Product overview",
+    "text": "Welcome to the product presentation. This section introduces the product purpose, target users, and main business value."
+  },
+  {
+    "slide": 2,
+    "title": "Technical highlights",
+    "text": "This section explains the architecture, implementation approach, security model, deployment process, and future extension points."
+  }
+]

@@ -1,0 +1,9 @@
+{
+  "name": "ai-video-generation",
+  "private": true,
+  "type": "module",
+  "keywords": ["pi-package"],
+  "pi": {
+    "extensions": ["./pi/extensions/video-workflow.ts"]
+  }
+}

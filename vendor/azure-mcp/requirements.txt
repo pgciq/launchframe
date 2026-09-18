@@ -1,0 +1,6 @@
+mcp>=1.2.0,<2.0.0
+azure-identity>=1.19.0
+azure-mgmt-resource>=23.2.0
+azure-mgmt-compute>=34.0.0
+azure-mgmt-sql>=3.0.1
+azure-mgmt-subscription>=3.1.1

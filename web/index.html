@@ -1,0 +1,817 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>LaunchFrame</title>
+  <link rel="icon" href="/favicon.ico" type="image/x-icon">
+  <style>
+    :root {
+      color-scheme: dark;
+      font-family: system-ui, sans-serif;
+      --bg:           #0b1220;
+      --bg-section:   #111d31;
+      --bg-input:     #172840;
+      --bg-pre:       #07101d;
+      --text:         #f4f7fb;
+      --text-muted:   #c8d5e6;
+      --text-label:   #a9b8cc;
+      --text-dim:     #8899a6;
+      --accent:       #6fe7b7;
+      --accent2:      #5ce1e6;
+      --accent3:      #4da3ff;
+      --yellow:       #ffc857;
+      --red:          #ff7b8a;
+      --border:       #2b4261;
+      --border-light: #1d3455;
+      --btn-sec-bg:   #2b4261;
+      --btn-sec-fg:   #ffffff;
+      --btn-pri-bg:   #4da3ff;
+      --btn-text:     #ffffff;
+      --btn-busy-bg:  #ffc857;
+      --btn-busy-fg:  #241500;
+      --btn-danger-bg:#a94452;
+    }
+    [data-theme="light"] {
+      color-scheme: light;
+      --bg:           #eef2f7;
+      --bg-section:   #ffffff;
+      --bg-input:     #f4f7fc;
+      --bg-pre:       #e4eaf2;
+      --text:         #1a2535;
+      --text-muted:   #374e63;
+      --text-label:   #4a6070;
+      --text-dim:     #5a7082;
+      --accent:       #0a7a5c;
+      --accent2:      #0878a0;
+      --accent3:      #1865c0;
+      --yellow:       #9c5e00;
+      --red:          #b02030;
+      --border:       #c0cfdf;
+      --border-light: #d8e4ef;
+      --btn-sec-bg:   #d0dcea;
+      --btn-sec-fg:   #1a2535;
+      --btn-pri-bg:   #1865c0;
+      --btn-text:     #ffffff;
+      --btn-busy-bg:  #c47a00;
+      --btn-busy-fg:  #ffffff;
+      --btn-danger-bg:#c0293a;
+    }
+    body { margin: 0; background: var(--bg); color: var(--text); transition: background .25s, color .25s; }
+    main { max-width: 1200px; margin: auto; padding: 24px; transition: margin-left .2s ease, max-width .2s ease; }
+    body.workflow-open main { margin-left: auto; margin-right: auto; max-width: 1200px; }
+    section { background: var(--bg-section); border: 1px solid var(--border); border-radius: 10px; padding: 16px; margin: 14px 0; }
+    label { display: inline-flex; flex-direction: column; gap: 5px; min-width: 220px; margin: 5px 12px 5px 0; color: var(--text-label); }
+    input, select, textarea { background: var(--bg-input); border: 1px solid var(--border); border-radius: 5px; color: var(--text); padding: 8px; }
+    textarea { width: 100%; min-height: 260px; box-sizing: border-box; font-family: monospace; }
+    #draft-instructions, #presentation-instructions { min-height: 90px; font-family: sans-serif; font-size: .88em; resize: vertical; width: 100%; box-sizing: border-box; }
+    .draft-instructions-panel { margin: 12px 0; padding: 12px 14px; background: var(--bg-input); border: 1px solid var(--border); border-radius: 8px; }
+    .draft-instructions-panel h3 { margin: 0 0 6px; color: var(--accent2); font-size: 1em; }
+    .draft-instructions-panel h3 span { color: var(--text-dim); font-size: .8em; font-weight: normal; }
+    .draft-instructions-panel p { color: var(--text-dim); font-size: .82em; line-height: 1.5; margin: 5px 0; }
+    .draft-instructions-panel .status { color: var(--accent); }
+    .draft-instructions-actions { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+    .draft-instructions-actions button { margin-left: 0; }
+    button { background: var(--btn-pri-bg); color: var(--btn-text); border: 0; border-radius: 5px; padding: 8px 13px; margin: 5px; cursor: pointer; }
+    button.busy { animation: action-pulse 1.1s ease-in-out infinite; background: var(--btn-busy-bg); color: var(--btn-busy-fg); }
+    @keyframes action-pulse { 50% { opacity: .48; } }
+    button.secondary { background: var(--btn-sec-bg); color: var(--btn-sec-fg); }
+    button.danger { background: var(--btn-danger-bg); color: #fff; }
+    button:disabled { background: var(--btn-sec-bg) !important; color: var(--text-label) !important; opacity: 0.55; cursor: not-allowed; box-shadow: none; }
+    pre { background: var(--bg-pre); border-radius: 6px; padding: 12px; min-height: 100px; overflow: auto; white-space: pre-wrap; }
+    .status { color: var(--accent); font-weight: 600; }
+    .grid { display: grid; grid-template-columns: repeat(2, minmax(260px, 1fr)); gap: 12px; }
+    .row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+    .project-row { display: flex; align-items: end; gap: 8px; }
+    .pi-status-row { align-items: center; }
+    .pi-status-row #project-path-state { flex: 1; margin: 0; }
+    .pi-dot { font-size: 1.15em; font-style: italic; font-weight: 700; margin-left: auto; padding-left: 12px; cursor: default; user-select: none; color: var(--text-dim); transition: color 0.3s; }
+    .pi-dot.pi-running  { color: var(--accent); }
+    .pi-dot.pi-starting { color: var(--yellow); animation: pi-blink 0.9s step-start infinite; }
+    @keyframes pi-blink { 50% { opacity: 0.2; } }
+    .project-actions { display: inline-flex; gap: 6px; flex-wrap: wrap; align-items: center; }
+    .project-row label { flex: 1; }
+    .azure-row { display: flex; align-items: end; gap: 18px; flex-wrap: wrap; margin: 8px 0; }
+    .azure-row label { min-width: 280px; margin: 0; }
+    .azure-control { display: flex; flex-direction: column; align-items: flex-start; min-width: 210px; }
+    .azure-control p, .azure-control .status { margin: 0 0 4px; min-height: 20px; }
+    .speech-resource-control { flex: 0 1 300px; min-width: 210px; }
+    .speech-resource-control #speech-state { max-width: 100%; white-space: normal; overflow-wrap: anywhere; line-height: 1.35; }
+    .speech-resource-select { flex: 1 1 320px; min-width: 260px; }
+    .speech-resource-select select { width: 100%; box-sizing: border-box; }
+    .audio-review { display: grid; grid-template-columns: minmax(300px, 1fr) minmax(320px, 1fr); align-items: start; gap: 14px; margin: 10px 0; padding: 10px; background: var(--bg-section); border: 1px solid var(--border); border-radius: 8px; }
+    .voice-preview-control { display: flex; align-items: center; gap: 6px; min-width: 0; }
+    .voice-preview-control select { flex: 1; min-width: 0; }
+    .voice-preview-control button { margin: 0; white-space: nowrap; }
+    .audio-column, .subtitle-column { min-width: 0; }
+    .audio-column { display: flex; flex-direction: column; gap: 8px; }
+    .audio-column > strong { color: var(--text); }
+    .subtitle-column { display: flex; flex-direction: column; gap: 10px; }
+    .subtitle-review { align-self: start; }
+    .live-subtitles { grid-column: 1 / -1; padding: 10px 14px; background: var(--bg-input); border-radius: 6px; line-height: 1.45; }
+    .subtitle-editor-panel { grid-column: 1 / -1; width: 100%; box-sizing: border-box; display: block; padding: 10px 14px; background: var(--bg-input); border-radius: 6px; }
+    .subtitle-editor-panel h4, .subtitle-editor-controls { margin-top: 0; }
+    .subtitle-editor-controls { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
+    .subtitle-editor-controls p { margin: 0; }
+    .subtitle-editor-content { width: 100%; }
+    .subtitle-editor-content textarea { min-height: 260px; }
+    .subtitle-editor-panel > textarea { min-height: 360px; width: 100%; box-sizing: border-box; font-size: 13px; }
+    .subtitle-edit-notice { margin: 4px 0 6px; color: var(--text-label); font-size: 11px; line-height: 1.35; }
+    .live-subtitles p { margin: 4px 0; }
+    .live-subtitles p span:first-child { color: var(--accent2); font-weight: 700; }
+    .vision-review { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 12px; margin: 10px 0; }
+    .vision-card { padding: 12px; background: var(--bg-section); border: 1px solid var(--border); border-radius: 8px; }
+    .vision-card img { width: 100%; max-height: 180px; object-fit: contain; background: var(--bg); }
+    .vision-card textarea, .vision-card input { width: 100%; box-sizing: border-box; }
+    .model-usage, .model-catalog { margin-top: 10px; padding: 12px; background: var(--bg-section); border: 1px solid var(--border); border-radius: 8px; }
+    .model-usage pre { white-space: pre-wrap; max-height: 180px; overflow: auto; }
+    .usage-table { overflow-x: auto; margin: 8px 0; }
+    .usage-table table { width: 100%; border-collapse: collapse; font-size: 12px; }
+    .usage-table th, .usage-table td { border: 1px solid var(--border); padding: 6px 8px; text-align: left; white-space: nowrap; }
+    .usage-table th { color: var(--accent2); background: var(--bg-input); }
+    .usage-table section { margin: 10px 0; }
+    .workflow-panel { position: fixed; z-index: 1001; left: 16px; top: 16px; bottom: 16px; width: 120px; max-height: 75vh; overflow: auto; padding: 8px; padding-bottom: 48px; background: var(--bg-section); border: 1px solid var(--border); border-radius: 8px; box-shadow: 0 10px 30px rgba(0,0,0,.4); }
+    .workflow-header { display: flex; justify-content: space-between; align-items: center; color: var(--text); margin-bottom: 8px; cursor: grab; user-select: none; }
+    .workflow-header:active { cursor: grabbing; }
+    .workflow-footer { position: absolute; left: 14px; bottom: 12px; }
+    .workflow-step { padding: 8px 7px; margin: 5px 0; border-left: 3px solid var(--border); color: var(--text-label); font-size: 14px; line-height: 1.3; }
+    .workflow-step.completed { border-color: var(--accent); color: var(--accent); }
+    .workflow-step.current { border-color: var(--yellow); color: var(--yellow); animation: workflow-pulse 1.4s ease-in-out infinite; }
+    .workflow-step.waiting { border-color: var(--accent3); color: var(--accent3); }
+    .workflow-step.failed { border-color: var(--red); color: var(--red); }
+    .workflow-step { cursor: pointer; }
+    .workflow-focus { outline: 3px solid var(--accent2) !important; box-shadow: 0 0 0 6px rgba(92,225,230,.18) !important; }
+    @keyframes workflow-pulse { 50% { opacity: .45; } }
+    #show-workflow { position: fixed; z-index: 1001; left: 16px; top: 16px; margin: 0; border-radius: 0 6px 6px 0; }
+    .progress-panel[hidden] { display: none !important; }
+    .progress-panel { position: fixed; z-index: 1003; left: 16px; bottom: 16px; width: min(720px, calc(100vw - 32px)); height: 360px; max-height: 85vh; min-width: 280px; max-width: calc(100vw - 32px); min-height: 160px; box-sizing: border-box; overflow: hidden; resize: both; padding: 12px; display: flex; flex-direction: column; background: var(--bg-section); border: 1px solid var(--border); border-radius: 8px; box-shadow: 0 12px 40px rgba(0,0,0,.4); }
+    .progress-header { display: flex; align-items: center; justify-content: space-between; color: var(--text); cursor: grab; user-select: none; }
+    .progress-header:active { cursor: grabbing; }
+    .progress-footer { border-top: 1px solid var(--border); padding-top: 8px; margin-top: 8px; text-align: left; }
+    .progress-footer .status { white-space: nowrap; }
+    .progress-panel pre { flex: 1; min-height: 0; overflow: auto; }
+    .progress-service { border-top: 1px solid var(--border); padding-top: 8px; margin-top: 8px; }
+    .progress-service-header { display: flex; align-items: center; justify-content: space-between; gap: 8px; color: var(--text); }
+    .progress-service-header button { margin: 0; padding: 5px 8px; font-size: 11px; }
+    #service-state { flex: none; min-height: 0; max-height: 92px; margin: 6px 0 0; padding: 8px; font-size: 11px; }
+    .progress-service details { margin-top: 8px; }
+    .progress-service summary { cursor: pointer; color: var(--accent2); font-size: 12px; }
+    .backend-log-actions { display: flex; gap: 6px; margin: 6px 0; }
+    .backend-log-actions button { margin: 0; padding: 4px 7px; font-size: 10px; }
+    #service-log { flex: none; width: 100%; height: 150px; min-height: 80px; max-width: 100%; max-height: min(45vh, 360px); margin: 0; padding: 8px; box-sizing: border-box; font-size: 10px; white-space: pre-wrap; overflow: auto; resize: vertical; }
+    .bottom-actions { position: fixed; right: 16px; bottom: 16px; z-index: 1005; display: flex; align-items: center; gap: 8px; }
+    .bottom-actions button { margin: 0; }
+    #progress-toggle { position: fixed; z-index: 1005; left: 16px; bottom: 16px; }
+    .model-catalog { position: fixed; z-index: 1003; inset: 8vh 5vw; overflow: auto; box-shadow: 0 12px 40px rgba(0,0,0,.55); }
+    .activity-log[hidden] { display: none !important; }
+    .activity-log { position: fixed; z-index: 1004; top: 16px; right: 16px; width: min(560px, calc(100vw - 32px)); min-width: 300px; max-width: calc(100vw - 16px); max-height: 70vh; min-height: 160px; overflow: hidden; resize: both; padding: 12px; display: flex; flex-direction: column; background: var(--bg); border: 1px solid var(--accent3); border-radius: 8px; box-shadow: 0 12px 40px rgba(0,0,0,.55); }
+    .activity-log-header { display: flex; gap: 8px; align-items: center; margin-bottom: 8px; cursor: grab; user-select: none; }
+    .activity-log-header:active { cursor: grabbing; }
+    .activity-log-footer { display: flex; gap: 8px; justify-content: flex-end; border-top: 1px solid var(--border); padding-top: 8px; margin-top: 8px; }
+    .activity-log-header strong { margin-right: auto; color: var(--accent2); }
+    #activity-log-lines { flex: 1; min-height: 0; overflow: auto; overflow-anchor: none; }
+    .activity-log-line { border-top: 1px solid var(--border); padding: 6px 0; font-size: 11px; white-space: pre-wrap; word-break: break-word; }
+    .activity-log-line .time { color: var(--text-label); margin-right: 8px; }
+    .model-catalog table { width: 100%; border-collapse: collapse; font-size: 12px; }
+    .model-catalog th, .model-catalog td { border: 1px solid var(--border); padding: 6px; text-align: left; }
+    .model-catalog tr.current { background: rgba(111,231,183,.12); outline: 2px solid var(--accent); }
+    .audio-review > strong { flex-basis: 100%; }
+    .audio-review label { display: flex; flex-direction: column; gap: 4px; min-width: 0; }
+    .subtitle-review { align-self: start; margin-top: 0; min-width: 0; padding: 8px; background: var(--bg-input); border-radius: 6px; font-size: 12px; }
+    .subtitle-review p { margin: 2px 0; }
+    .subtitle-review h4 { margin: 8px 0 4px; }
+    .subtitle-review textarea { width: 100%; box-sizing: border-box; font-size: 11px; }
+    main { position: relative; }
+    .top-actions { position: absolute; top: 0; right: 0; display: flex; gap: 8px; }
+    #show-guide { position: fixed; top: 16px; right: 16px; z-index: 1005; }
+    #show-log { position: static; }
+    #theme-toggle { position: fixed; top: 18px; right: 110px; z-index: 1005; font-size: 1.2em; line-height: 1; padding: 6px 6px; display: inline-flex; align-items: center; cursor: pointer; user-select: none; }
+    .generated-links { display: inline-flex; gap: 10px; flex-wrap: wrap; align-items: center; }
+    .pi-internal-toggle { display: inline-flex; align-items: center; gap: 5px; margin: 4px 0 0; padding: 5px 8px; font-size: 11px; }
+    .pi-internal-toggle .expand-icon { display: inline-block; width: 11px; font-size: 13px; line-height: 1; }
+    .pi-internal { margin-top: 6px; }
+    #pi-internal-provider-body, #pi-extension-provider-body { display: contents; }
+    #pi-internal-provider-body[hidden], #pi-extension-provider-body[hidden] { display: none !important; }
+    .pi-provider-group-toggle { grid-column: 1 / -1; display: inline-flex; align-items: center; gap: 5px; width: 100%; margin: 8px 0 0; padding: 4px 6px; border: 0; border-top: 1px solid var(--border); border-radius: 0; background: transparent; color: var(--accent2); font-size: 12px; font-weight: 700; text-align: left; }
+    .pi-provider-group-toggle .expand-icon { width: 11px; font-size: 13px; }
+    .pi-internal[hidden] { display: none !important; }
+    .subscription-control { flex-direction: column; align-items: flex-start; gap: 2px; }
+    .subscription-control label { min-width: 360px; }
+    .subscription-control .status { margin: 0; white-space: nowrap; font-size: inherit; }
+    .subscription-title { display: flex; justify-content: space-between; align-items: center; gap: 8px; }
+    .provider-grid { display: grid; gap: 6px; margin: 10px 0; }
+    .provider-grid-header, .provider-row { display: grid; grid-template-columns: 24px minmax(105px, 1fr) minmax(80px, .55fr) minmax(75px, .6fr) minmax(260px, 1.55fr) minmax(190px, 1.25fr) minmax(105px, .7fr); gap: 5px; align-items: center; padding: 6px; }
+    .provider-grid-header { color: var(--text-label); font-size: 13px; border-bottom: 1px solid var(--border); }
+    .provider-row { background: var(--bg-input); border: 1px solid var(--border); border-radius: 5px; }
+    .provider-row.selected { border-color: var(--accent3); box-shadow: 0 0 0 2px rgba(77,163,255,.18); }
+    .provider-name { color: var(--text); font-size: 12px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .provider-row input[type="password"] { width: 104px; min-width: 0; }
+    .provider-actions { display: flex; gap: 4px; flex-wrap: wrap; }
+    .provider-actions button { margin: 0; padding: 4px 6px; font-size: 10px; white-space: nowrap; }
+    .model-test-summary { color: var(--text-dim); font-size: 10px; white-space: nowrap; }
+    .model-test-summary.pass { color: var(--accent); }
+    .model-test-summary.fail { color: var(--red); }
+    .quota-summary { color: var(--accent); font-size: 11px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; min-width: 0; }
+    .provider-options { margin-top: 8px; }
+    .vision-config { display: flex; justify-content: space-between; align-items: center; gap: 16px; margin: 8px 0; }
+    .vision-config .status { white-space: nowrap; }
+    .vision-config label { display: inline-flex; flex-direction: row; align-items: center; gap: 5px; min-width: auto; margin: 0; white-space: nowrap; }
+    .provider-row span[id$="-auth-control"] { display: flex; align-items: center; gap: 4px; flex-wrap: nowrap; min-width: 0; white-space: nowrap; }
+    .provider-row span.pi-auth-both { flex-direction: row; align-items: center; flex-wrap: nowrap; gap: 4px; }
+    .pi-token-controls { display: flex; align-items: center; gap: 4px; flex-wrap: nowrap; }
+    .provider-note { color: var(--yellow); font-size: 11px; }
+    .provider-row span[id$="-auth-control"] label { min-width: auto; margin: 0; flex-direction: row; align-items: center; gap: 3px; white-space: nowrap; font-size: 11px; }
+    .provider-row span { font-size: 13px; }
+    .duration-row { display: flex; align-items: end; gap: 12px; flex-wrap: wrap; }
+    .duration-row .status { margin: 0 0 10px; }
+    #tour-backdrop { position: fixed; inset: 0; z-index: 1000; background: rgba(3, 8, 18, 0.68); }
+    #confirm-backdrop { position: fixed; inset: 0; z-index: 1100; display: flex; align-items: center; justify-content: center; background: rgba(3, 8, 18, .72); }
+    #confirm-backdrop[hidden] { display: none; }
+    #confirm-dialog { width: min(440px, calc(100vw - 32px)); padding: 20px; background: var(--bg-section); border: 1px solid var(--accent3); border-radius: 10px; box-shadow: 0 14px 45px rgba(0,0,0,.6); color: var(--text); }
+    #confirm-dialog h3 { margin: 0 0 10px; color: var(--accent2); }
+    #confirm-dialog p { margin: 0; color: var(--text-muted); line-height: 1.45; }
+    .confirm-actions { display: flex; justify-content: flex-end; gap: 8px; margin-top: 18px; }
+    .confirm-actions .danger { background: var(--btn-danger-bg); color: #fff; }
+    #confirm-restart { background: var(--btn-busy-bg); color: var(--btn-busy-fg); }
+    #tour-card { position: fixed; z-index: 1002; bottom: 24px; left: 50%; transform: translateX(-50%); width: min(380px, calc(100vw - 32px)); padding: 18px; background: var(--bg-section); border: 1px solid var(--accent3); border-radius: 10px; box-shadow: 0 12px 40px rgba(0,0,0,.45); color: var(--text); }
+    #tour-card h3 { margin: 0 0 8px; color: var(--accent2); }
+    #tour-card p { line-height: 1.45; margin: 8px 0 14px; }
+    #tour-card .tour-actions { display: flex; gap: 8px; justify-content: flex-end; flex-wrap: wrap; }
+    .tour-highlight { position: relative !important; z-index: 1001 !important; outline: 3px solid var(--yellow) !important; box-shadow: 0 0 0 8px rgba(255,200,87,.18), 0 0 24px rgba(255,200,87,.6) !important; }
+    .resource-group { border-top: 1px solid var(--border); padding-top: 10px; margin-top: 14px; }
+    .resource-group h3 { color: var(--accent2); margin: 5px 0 8px; }
+    .asset { display: inline-flex; flex-direction: column; vertical-align: top; width: 240px; margin: 5px; padding: 8px; background: var(--bg-input); border-radius: 6px; border: 1px solid var(--border); }
+    .asset-name { color: var(--text-label); font-size: 12px; overflow-wrap: anywhere; margin-bottom: 5px; }
+    img.preview { max-width: 220px; max-height: 150px; object-fit: contain; cursor: zoom-in; }
+    video.preview { width: 100%; max-height: 180px; background: #000; }
+    .video-review video { width: 100%; max-width: 1200px; height: auto; min-height: 420px; background: #000; }
+    .video-review { margin-top: 12px; }
+    audio.preview { width: 100%; }
+    iframe.pdf-preview { width: 100%; height: 520px; border: 1px solid var(--border); background: #fff; }
+    a { color: var(--accent2); }
+    @media (max-width: 720px) { .provider-grid-header { display: none; } .provider-row { grid-template-columns: 1fr; } body.workflow-open main { margin-left: 0; margin-right: 0; max-width: none; } .workflow-panel { left: 0; top: 90px; bottom: 8px; width: min(140px, calc(100vw - 32px)); max-height: 75vh; } #show-workflow { left: 8px; top: 110px; } #show-guide { top: 8px; right: 12px; } .audio-review { grid-template-columns: 1fr; } .subtitle-review, .live-subtitles, .subtitle-editor-panel { grid-column: 1; grid-row: auto; } .subtitle-editor-content, .subtitle-edit-notice { grid-column: 1; grid-row: auto; } main { padding-top: 48px; } #show-guide { top: 8px; right: 16px; } .bottom-actions { right: 12px; bottom: 12px; } .grid, .row { grid-template-columns: 1fr; } .asset { width: calc(100% - 10px); } }
+  </style>
+</head>
+<body>
+<main>
+  <h1>LaunchFrame</h1>
+  <p>Resource-driven PPT, narration, subtitles, video, review, and local delivery workflow.</p>
+  <div class="top-actions">
+    <span id="theme-toggle" title="Toggle light / dark theme" onclick="toggleTheme()" role="button" aria-label="Toggle theme" tabindex="0" onkeydown="if(event.key==='Enter'||event.key===' ')toggleTheme()">☀️</span>
+    <button id="show-guide" class="secondary" type="button">Guide tour</button>
+  </div>
+
+  <section>
+    <h2>1. Product resources</h2>
+
+    <div class="project-row">
+      <label>Product resource directory<input id="project" placeholder="D:\\product-resources\\my-product" onchange="loadSelectedProject()"></label>
+      <span class="project-actions"><button id="browse-project" class="secondary" onclick="browseProject()">Select resource folder</button><button id="load-project" class="secondary" onclick="loadSelectedProject()">Load selected folder</button><button id="refresh-resources" class="secondary" onclick="scanResources()" disabled>Refresh resources</button></span>
+    </div>
+    <div class="project-row pi-status-row">
+      <p class="status" id="project-path-state">The selected directory is the access boundary for this run. Resources are scanned automatically; video-project.json is optional.</p>
+      <span id="pi-state" class="pi-dot" title="Select a product resource directory" aria-label="Pi stopped">π</span>
+    </div>
+  </section>
+
+  <section>
+    <h2>2. Azure authentication and resource</h2>
+    <p>Log in to Azure first, then discover the Speech resource and supported Voice catalog.</p>
+    <div class="azure-row">
+      <div id="azure-auth-control" class="azure-control">
+        <span class="status" id="azure-state">Checking Azure login status...</span>
+        <div>
+          <button id="azure-login" class="secondary" onclick="azureLogin()">Login Azure</button>
+          <button id="azure-logout" class="secondary" onclick="azureLogout()" hidden>Logout Azure</button>
+        </div>
+      </div>
+      <div class="azure-control subscription-control">
+        <label><span class="subscription-title"><span>Azure subscription</span><span class="status" id="subscription-state">Waiting for Azure authentication...</span></span><select id="subscription" onchange="azureResources()"><option value="">Loading after authentication...</option></select></label>
+      </div>
+    </div>
+    <div class="azure-row">
+      <div class="azure-control speech-resource-control">
+        <p id="speech-state">No Speech resource selected.</p>
+        <button id="discover-resources" class="secondary" onclick="azureResources(true)">Refresh Speech resources</button>
+      </div>
+      <label class="speech-resource-select">Azure Speech resource<select id="speech_resource" onchange="loadVoices()"><option value="">Discover after selecting a subscription</option></select></label>
+    </div>
+  </section>
+
+  <section>
+    <h2>3. Language, voice, duration, and LLM/Vision</h2>
+    <button id="load-voices" class="secondary" onclick="loadVoices(true)">Refresh Voice catalog</button>
+    <span class="status" id="voice-state">Voice catalog not loaded.</span>
+    <div class="row">
+      <label>Primary language<select id="primary_language" onchange="filterVoices()"><option value="en-US">English (en-US)</option></select></label>
+      <label>Primary voice<div class="voice-preview-control"><select id="primary_voice"><option>en-US-JennyNeural</option></select><button id="preview-primary-voice" class="secondary" type="button" onclick="previewVoice('primary')">▶ Preview</button></div><audio id="primary-voice-preview" controls hidden></audio></label>
+      <label>Secondary language<select id="secondary_language" onchange="filterVoices()"><option value="zh-CN">Chinese (zh-CN)</option></select></label>
+      <label>Secondary voice<div class="voice-preview-control"><select id="secondary_voice"><option>zh-CN-YunyangNeural</option></select><button id="preview-secondary-voice" class="secondary" type="button" onclick="previewVoice('secondary')">▶ Preview</button></div><audio id="secondary-voice-preview" controls hidden></audio></label>
+    </div>
+    <div class="duration-row">
+      <label>Target duration (seconds)<input id="target_duration_seconds" placeholder="Leave blank: use actual audio duration"></label>
+      <span class="status" id="actual-duration">Actual audio duration: not generated.</span>
+    </div>
+    <p class="status" id="duration-state"></p>
+    <div id="pi-controls" class="provider-grid">
+      <div class="provider-grid-header"><strong></strong><strong>Provider</strong><strong>Quota</strong><strong>Status</strong><strong>Auth</strong><strong>Model</strong><strong>Details / usage</strong></div>
+      <div class="provider-row" data-provider="codemie">
+        <input type="radio" name="provider-choice" value="codemie" checked onchange="providerChanged('codemie')"><span class="provider-name">CodeMie Web / Platform</span>
+        <span id="quota-codemie" class="quota-summary">—</span>
+        <span class="status" id="codemie-state">login required.</span>
+        <button id="codemie-login-logout" class="secondary" onclick="loginCodeMie()">Login CodeMie SSO</button>
+        <select id="model-codemie" onchange="selectProviderModel('codemie')" disabled><option>Select model</option></select><span class="provider-actions"><button class="secondary" onclick="showModelCatalog('codemie')">Details</button><button id="usage-codemie" class="secondary" onclick="refreshProviderUsage('codemie')">Usage</button><button class="secondary" onclick="testSelectedProviderModel('codemie')">Test</button><span id="usage-summary-codemie" class="usage-summary"></span><span id="model-test-summary-codemie" class="model-test-summary">Not tested</span></span>
+      </div>
+      <div class="provider-row" data-provider="codemie-cli">
+        <input type="radio" name="provider-choice" value="codemie-cli" onchange="providerChanged('codemie-cli')"><span class="provider-name">CodeMie CLI</span>
+        <span id="quota-codemie-cli" class="quota-summary">—</span>
+        <span class="status" id="codemie-cli-state">Uses CodeMie SSO</span>
+        <span>Same CodeMie SSO</span>
+        <select id="model-codemie-cli" onchange="selectProviderModel('codemie-cli')" disabled><option>Select model</option></select><span class="provider-actions"><button class="secondary" onclick="showModelCatalog('codemie-cli')">Details</button><button id="usage-codemie-cli" class="secondary" onclick="refreshProviderUsage('codemie-cli')">Usage</button><button class="secondary" onclick="testSelectedProviderModel('codemie-cli')">Test</button><span id="usage-summary-codemie-cli" class="usage-summary"></span><span id="model-test-summary-codemie-cli" class="model-test-summary">Not tested</span></span>
+      </div>
+      <div class="provider-row" data-provider="dial">
+        <input type="radio" name="provider-choice" value="dial" onchange="providerChanged('dial')"><span class="provider-name">DIAL <small class="provider-note">(Company VPN required)</small></span>
+        <span id="quota-dial" class="quota-summary">—</span>
+        <span class="status" id="dial-state">VPN + token required</span>
+        <span id="dial-auth-control"><input id="dial-token" type="password" placeholder="DIAL token"><label><input id="remember-dial" type="checkbox" checked> Rem</label><button class="secondary" onclick="validateProviderToken('dial')">Validate</button></span>
+        <select id="model-dial" onchange="selectProviderModel('dial')" disabled><option>Validate token first</option></select><span class="provider-actions"><button class="secondary" onclick="showModelCatalog('dial')">Details</button><button id="usage-dial" class="secondary" onclick="refreshProviderUsage('dial')">Usage</button><button class="secondary" onclick="testSelectedProviderModel('dial')">Test</button><span id="usage-summary-dial" class="usage-summary"></span><span id="model-test-summary-dial" class="model-test-summary">Not tested</span></span>
+      </div>
+      <div class="provider-row" data-provider="elitea">
+        <input type="radio" name="provider-choice" value="elitea" onchange="providerChanged('elitea')"><span class="provider-name">ELITEA</span>
+        <span id="quota-elitea" class="quota-summary">—</span>
+        <span class="status" id="elitea-state">Token required</span>
+        <span id="elitea-auth-control"><input id="elitea-token" type="password" placeholder="ELITEA token"><label><input id="remember-elitea" type="checkbox" checked> Rem</label><button class="secondary" onclick="validateProviderToken('elitea')">Validate</button></span>
+        <select id="model-elitea" onchange="selectProviderModel('elitea')" disabled><option>Validate token first</option></select><span class="provider-actions"><button class="secondary" onclick="showModelCatalog('elitea')">Details</button><button id="usage-elitea" class="secondary" onclick="refreshProviderUsage('elitea')">Usage</button><button class="secondary" onclick="testSelectedProviderModel('elitea')">Test</button><span id="usage-summary-elitea" class="usage-summary"></span><span id="model-test-summary-elitea" class="model-test-summary">Not tested</span></span>
+      </div>
+      <select id="llm-provider" hidden><option value="codemie">codemie</option><option value="codemie-cli">codemie-cli</option><option value="dial">dial</option><option value="elitea">elitea</option></select>
+      <select id="llm-model" hidden></select>
+    </div>
+    <!-- Pi-native providers are kept in this inventory while the workflow picker remains focused on supported workflow providers. -->
+    <button id="pi-internal-toggle" class="secondary pi-internal-toggle" type="button" aria-expanded="false" aria-controls="pi-internal-provider-grid" title="Show Pi built-in and extension providers" onclick="togglePiInternalProviders()"><span class="expand-icon" aria-hidden="true">▸</span><span>Pi providers</span></button>
+    <div id="pi-internal-provider-grid" class="provider-grid pi-internal" hidden aria-hidden="true">
+      <button id="pi-internal-group-toggle" class="pi-provider-group-toggle" type="button" aria-expanded="true" onclick="togglePiProviderGroup('internal')"><span class="expand-icon" aria-hidden="true">▾</span><span>Pi built-in providers</span></button>
+      <div id="pi-internal-provider-header" class="provider-grid-header"><strong></strong><strong>Provider</strong><strong>Quota</strong><strong>Status</strong><strong>Auth</strong><strong>Model</strong><strong>Details / usage</strong></div>
+      <div id="pi-internal-provider-body"></div>
+      <button id="pi-extension-group-toggle" class="pi-provider-group-toggle" type="button" aria-expanded="true" onclick="togglePiProviderGroup('extension')"><span class="expand-icon" aria-hidden="true">▾</span><span>Pi-ext providers</span></button>
+      <div id="pi-extension-provider-header" class="provider-grid-header"><strong></strong><strong>Provider</strong><strong>Quota</strong><strong>Status</strong><strong>Auth</strong><strong>Model</strong><strong>Details / usage</strong></div>
+      <div id="pi-extension-provider-body"></div>
+    </div>
+    <div class="vision-config"><span id="llm-model-state" class="status">No model selected.</span><label id="vision-option"><input id="vision_enabled" type="checkbox" checked onchange="markConfigDirty()"> Enable Vision image analysis</label></div>
+    <div class="duration-row" style="align-items:center;margin:8px 0">
+      <label style="min-width:0;flex:1">Source PPT presentations
+        <select id="ppt-source" multiple size="4" onchange="markConfigDirty()" style="width:100%">
+          <option value="">No source PPT selected</option>
+        </select>
+        <span style="font-size:.82em;color:var(--text-dim);display:block;margin-top:2px">Select one or more existing PPT files as source material. A single selected PPT is reused as the source deck; multiple selected PPT files are combined as LLM reference material and produce a new PPT. Files under templates/ are treated as template candidates.</span>
+        <span id="ppt-source-state" class="status" style="font-size:.82em;display:block;margin-top:2px"></span>
+      </label>
+      <label style="min-width:0;flex:1">PPT slide template
+        <select id="ppt-template" onchange="markConfigDirty()" style="width:100%">
+          <option value="">Built-in default (dark blue)</option>
+        </select>
+        <span style="font-size:.82em;color:var(--text-dim);display:block;margin-top:2px">Files appearing here come from the product resource directory. Drop a .pptx file into the project folder to make it available as a template.</span>
+      </label>
+      <span class="status" id="ppt-template-state" style="margin:0 0 6px;font-size:.82em"></span>
+    </div>
+    <div>
+      <button id="save-config" onclick="saveConfig()" disabled>Check and save configuration</button>
+      <span class="status" id="config-state">Select a project to load configuration.</span>
+    </div>
+
+  </section>
+
+  <section>
+    <h2>4. Product resource preview</h2>
+    <div id="resource-preview"><p>Select a product resource directory to scan resources.</p></div>
+  </section>
+
+  <section>
+    <h2>5. Vision and LLM draft review</h2>
+    <p class="status" id="vision-state">Image analysis is not available until images are scanned.</p>
+    <div class="azure-row">
+      <button id="analyze-images" class="secondary" onclick="analyzeImages()" disabled>Vision analysis</button>
+      <button id="approve-vision" class="secondary" onclick="approve('vision')" disabled>Approve Vision</button>
+      <button id="save-vision" class="secondary" onclick="saveVisionReport()" disabled>Save Vision analysis</button>
+    </div>
+    <div id="vision-review" class="vision-review" hidden></div>
+    <div id="draft-instructions-panel" class="draft-instructions-panel">
+      <h3>Customize the draft prompt <span>(optional)</span></h3>
+      <p>These instructions are added to the LLM request before the draft is generated. The latest text is used immediately when you click Generate; save configuration if you want to reuse it later.</p>
+      <p>Examples: target 6–8 slides; emphasize practical use cases; use a formal and concise tone; include a strong closing call to action; prominently mention the 3 key differentiators.</p>
+      <textarea id="draft-instructions" oninput="markDraftInstructionsDirty()" placeholder="Tell the LLM what to prioritize, include, avoid, or how to structure the draft..."></textarea>
+      <div class="draft-instructions-actions"><button id="load-draft-instructions" class="secondary" onclick="loadDraftInstructions()">Load saved prompt</button><button id="save-draft-instructions" class="secondary" onclick="saveDraftInstructions()" disabled>Save prompt</button><span class="status" id="draft-instructions-state"></span></div>
+    </div>
+    <p>Generate a reviewable draft after reviewing Vision results. The Draft is not published or built automatically.</p>
+    <p class="status" id="draft-state">Draft has not been generated.</p>
+    <button id="generate-draft" onclick="generateDraft()" disabled>Generate LLM draft</button>
+    <textarea id="draft" oninput="setDraftDirty(true)" placeholder="Content draft JSON"></textarea>
+    <p class="status" id="draft-edit-state">Draft is not loaded.</p>
+    <p class="status" id="duration-estimate-state" style="font-size:.85em"></p>
+    <br>
+    <button id="load-draft" class="secondary" onclick="loadDraft()" disabled>Load draft</button>
+    <button id="save-draft" onclick="saveDraft()" disabled>Save draft</button>
+    <button id="approve-draft" class="secondary" onclick="approve('draft')" disabled>Approve draft</button>
+  </section>
+
+  <section>
+    <h2>6. Stage build and review</h2>
+    <div id="presentation-instructions-panel" class="draft-instructions-panel">
+      <h3>Customize the PPT generation prompt <span>(optional)</span></h3>
+      <p>These instructions are saved separately from the Draft prompt and are available when the approved Draft is turned into a PPT. Edit the prompt here, then save it without returning to the configuration section.</p>
+      <textarea id="presentation-instructions" oninput="markPresentationInstructionsDirty()" placeholder="Tell the PPT generator what to emphasize in the slide structure, layout, visual hierarchy, or presentation style..."></textarea>
+      <div class="draft-instructions-actions"><button id="load-presentation-instructions" class="secondary" onclick="loadPresentationInstructions()">Load saved prompt</button><button id="save-presentation-instructions" class="secondary" onclick="savePresentationInstructions()" disabled>Save PPT prompt</button><span class="status" id="presentation-instructions-state"></span></div>
+    </div>
+    <div class="azure-row">
+      <button id="build-ppt" onclick="buildOrRegenerate('presentation')" disabled>Build PPT</button>
+      <span class="generated-links"><a id="ppt-link" target="_blank" hidden>Download generated PPTX</a> <a id="pdf-link" target="_blank" hidden>Open generated PDF</a></span>
+    </div>
+    <iframe id="generated-pdf-preview" class="pdf-preview" hidden title="Generated PDF preview"></iframe>
+    <div class="azure-row">
+      <button id="build-audio" onclick="buildOrRegenerate('audio')" disabled>Build audio + subtitles</button><span id="audio-build-state" class="status"></span>
+    </div>
+    <div id="audio-preview" class="audio-review" hidden>
+      <div class="audio-column">
+        <strong>Audio review</strong>
+        <label>Primary-language audio<audio id="primary-audio-preview" controls></audio></label>
+        <label>Secondary-language audio<audio id="secondary-audio-preview" controls></audio></label>
+      </div>
+      <div class="subtitle-column">
+        <div id="subtitle-review" hidden>
+          <strong>Subtitle review</strong>
+          <p><a id="primary-srt-link" target="_blank" hidden>Open primary SRT</a></p>
+          <p><a id="secondary-srt-link" target="_blank" hidden>Open secondary SRT</a></p>
+          <p><a id="bilingual-srt-link" target="_blank" hidden>Open bilingual SRT</a></p>
+          <p><a id="bilingual-vtt-link" target="_blank" hidden>Open bilingual VTT</a></p>
+        </div>
+      </div>
+      <div id="live-subtitles" class="live-subtitles" hidden>
+        <strong>Live subtitles</strong>
+        <p><span>English:</span> <span id="primary-live-subtitle">—</span></p>
+        <p><span>Secondary:</span> <span id="secondary-live-subtitle">—</span></p>
+      </div>
+      <div id="subtitle-editor-panel" class="subtitle-editor-panel" hidden>
+        <h4>Subtitle editor</h4>
+        <div class="subtitle-editor-controls">
+          <select id="subtitle-track-editor" onchange="loadSubtitleEditor()"><option value="primary">Primary SRT/WebVTT</option><option value="secondary">Secondary SRT/WebVTT</option><option value="bilingual">Bilingual SRT/WebVTT</option></select>
+          <p class="status" id="subtitle-editor-state">Edit WebVTT cues, then save to update both WebVTT and SRT.</p>
+        </div>
+        <textarea id="subtitle-editor" oninput="subtitleDirty=true; updateSubtitleButtons()" rows="12" placeholder="Load a WebVTT file to edit subtitle text or timings"></textarea>
+        <p class="subtitle-edit-notice">Subtitle editor changes captions only: text, timing, and formatting. It does not change WAV, Azure Speech, pronunciation, or spoken content. Use it for typos, punctuation, capitalization, translation display, and cue start/end times.</p>
+        <p><button id="load-subtitle" class="secondary" onclick="loadSubtitleEditor()" disabled>Load selected subtitles</button> <button id="save-subtitle" onclick="saveSubtitleEditor()" disabled>Save subtitle edits</button></p>
+      </div>
+    </div>
+    <div class="azure-row">
+      <button id="build-video" onclick="buildOrRegenerate('video')" disabled>Build video</button>
+      <button class="secondary" onclick="openOutputFolder()">Open local output folder</button>
+    </div>
+    <div id="video-review" class="video-review" hidden>
+      <h3>Video review</h3>
+      <label>Primary-language video</label>
+      <p><a id="primary-video-link" target="_blank" hidden>Open primary MP4</a></p>
+      <video id="primary-video-preview" controls preload="metadata">
+        <track kind="subtitles" srclang="en" label="English" src="" default>
+      </video>
+      <label>Secondary-language video</label>
+      <p><a id="secondary-video-link" target="_blank" hidden>Open secondary MP4</a></p>
+      <video id="secondary-video-preview" controls preload="metadata">
+        <track kind="subtitles" srclang="secondary" label="Secondary language" src="">
+      </video>
+      <label>Dual-track video</label>
+      <p><a id="dual-video-link" target="_blank" hidden>Open dual-track MP4</a></p>
+      <label>Audio track<select id="dual-audio-track" onchange="selectDualAudioTrack()"><option value="embedded">Embedded dual-track audio</option><option value="primary">English audio</option><option value="secondary">Secondary-language audio</option></select></label>
+      <video id="dual-video-preview" controls preload="metadata">
+        <track kind="subtitles" srclang="bilingual" label="Bilingual" src="" default>
+      </video>
+    </div>
+  </section>
+
+</main>
+<div id="workflow-panel" class="workflow-panel">
+  <div id="workflow-drag" class="workflow-header"><strong>Workflow</strong></div>
+  <div id="workflow-steps"></div>
+  <div class="workflow-footer"><button class="secondary" onclick="toggleWorkflowPanel()">Hide</button></div>
+</div>
+<button id="show-workflow" class="secondary" onclick="toggleWorkflowPanel()" hidden>Workflow</button>
+<div class="bottom-actions">
+  <button id="show-log" class="secondary" type="button">Activity log</button>
+  <button id="service-toggle" class="danger" onclick="shutdownApplication()" title="Exit LaunchFrame">Exit</button>
+</div>
+<button id="progress-toggle" class="secondary" onclick="toggleProgressPanel()">Progress details</button>
+<div id="progress-panel" class="progress-panel" hidden>
+  <div id="progress-drag" class="progress-header"><strong>Progress details</strong><span><button class="secondary" onclick="refreshStatus(true)">Refresh status</button><button class="secondary" onclick="closeProgressPanel()">Close</button></span></div>
+  <pre id="output"></pre>
+  <div class="progress-service">
+    <div class="progress-service-header"><strong>Backend service</strong><button class="secondary" onclick="refreshServiceStatus()">Refresh service status</button></div>
+    <pre id="service-state">Service status is not loaded.</pre>
+    <details id="backend-log-section">
+      <summary>Backend log</summary>
+      <div class="backend-log-actions"><button class="secondary" onclick="refreshServiceLog()">Refresh log</button><button id="backend-log-autoscroll" class="secondary" onclick="toggleServiceLogAutoScroll()">Pause auto-scroll</button></div>
+      <pre id="service-log">Backend log is not loaded.</pre>
+    </details>
+  </div>
+  <div class="progress-footer"><span class="status" id="status">Not started</span></div>
+</div>
+<div id="model-catalog" class="model-catalog" hidden></div>
+<div id="activity-log" class="activity-log" hidden>
+  <div id="activity-log-drag" class="activity-log-header"><strong>Backend activity</strong></div>
+  <div id="activity-log-lines"></div>
+  <div class="activity-log-footer"><button id="activity-autoscroll" class="secondary" onclick="toggleActivityAutoScroll()">Pause auto-scroll</button><button class="secondary" onclick="clearActivityLog()">Clear</button><button id="close-activity-log" class="secondary" type="button">Close</button></div>
+</div>
+<div id="provider-usage-panel" class="model-catalog" hidden>
+  <button id="close-provider-usage" onclick="document.getElementById('provider-usage-panel').hidden=true">Close</button>
+  <h3>Provider usage and quota</h3>
+  <div id="provider-usage" class="usage-table">Login to CodeMie to load usage information.</div>
+  <button class="secondary" onclick="refreshProviderUsage()">Refresh usage</button>
+</div>
+<div id="confirm-backdrop" hidden>
+  <div id="confirm-dialog" role="dialog" aria-modal="true" aria-labelledby="confirm-title">
+    <h3 id="confirm-title">Terminate operation?</h3>
+    <p id="confirm-message">The running operation will be stopped. Partial output will not be approved.</p>
+    <div class="confirm-actions"><button id="confirm-no" class="secondary" type="button">Continue</button><button id="confirm-restart" class="secondary" type="button" hidden>Restart backend</button><button id="confirm-yes" class="danger" type="button">Terminate</button></div>
+  </div>
+</div>
+<div id="tour-backdrop" hidden></div>
+<div id="tour-card" role="dialog" aria-modal="true" aria-live="polite" hidden>
+  <h3 id="tour-title"></h3>
+  <p id="tour-text"></p>
+  <div class="tour-actions">
+    <button class="secondary" onclick="closeGuide()">Close tour</button>
+    <button id="tour-back" class="secondary" onclick="previousGuideStep()">Back</button>
+    <button id="tour-next" onclick="nextGuideStep()">Next</button>
+  </div>
+</div>
+<script>
+const $ = id => document.getElementById(id);
+const maskSubscriptionId = value => { const id = String(value || ""); return id ? `••••${id.slice(-6)}` : ""; };
+let activeProjectStorageKey = "ai-video:last-project";
+function projectStorageKey(root) { return `ai-video:last-project:${String(root || location.origin).replaceAll("\\", "/").toLowerCase()}`; }
+let IS_WINDOWS_WORKSPACE = false;
+const displayPath = value => { const str = String(value || ""); return IS_WINDOWS_WORKSPACE ? str.replaceAll("/", "\\") : str.replaceAll("\\", "/"); };
+const project = () => displayPath($("project").value.trim());
+const guideSteps = [
+  ["browse-project", "Product resources", "Choose a folder containing product resources. It becomes the access boundary for this run. The GUI scans it automatically and manages settings internally; video-project.json is optional."],
+  ["azure-auth-control", "Azure sign-in", "Use Login Azure or Logout Azure in this highlighted area. If Azure is already authenticated, the Logout Azure button is shown; otherwise click Login Azure to complete company authentication."],
+  ["subscription", "Choose a Subscription", "Select the Subscription that contains the Speech resource."],
+  ["discover-resources", "Speech resources", "Speech resources are discovered automatically after a Subscription is selected. Use this status and button to refresh the resource list before loading the Voice catalog."],
+  ["codemie-login-logout", "Sign in to CodeMie", "Use company SSO to authenticate the default CodeMie provider and load its available models."],
+  ["llm-model", "Choose a model", "Choose a company model from the list. The selection is applied automatically."],
+  ["save-config", "Save configuration", "Save the language, Voice, model, Vision, and duration settings."],
+  ["analyze-images", "Vision analysis", "Analyze product images and rendered PDF/DOCX pages before generating the Draft. Vision extracts OCR, descriptions, key points, Alt Text, confidence, and suggested slide placement."],
+  ["generate-draft", "Generate the Draft", "Draft is the foundation for the PPT, audio, subtitles, and videos. It also affects narration length and therefore final duration. Generate it after reviewing Vision results."],
+  ["save-draft-instructions", "Save the prompt", "Save the custom prompt here without scrolling back to the configuration section. The prompt is also applied immediately when you generate a Draft."],
+  ["presentation-instructions", "Customize the PPT prompt", "After the Draft is approved, customize the PPT generation guidance here before building the presentation. Load or save it without returning to the configuration section."],
+  ["load-draft", "Load Draft", "Load Draft reads the saved content-draft.json into the editor. If you made changes but did not save them, Load Draft restores the saved version."],
+  ["save-draft", "Save Draft", "You can manually edit the outline and both narrations. Save Draft stores the changes and resets downstream PPT, audio, subtitle, and video outputs; Vision, Draft, and PPT approvals must be completed again as needed."],
+  ["approve-draft", "Approve Draft", "Approve Draft confirms that the content is ready to become the PPT, narration, subtitles, and videos."],
+  ["build-ppt", "Build PPT", "Generate the PPTX and PDF for review."],
+  ["build-audio", "Build audio + subtitles", "Generate narration and synchronized subtitles."],
+  ["build-video", "Build video", "Generate the primary, secondary, and dual-track videos."],
+];
+let guideIndex = 0;
+let guideTarget = null;
+
+let configuredSubscription = "";
+let configuredSpeechResource = "";
+let activeOperation = null;
+let activityEntries = [];
+let activityAutoScroll = true;
+let activityPausedScrollTop = 0;
+let serviceLogAutoScroll = true;
+function redactSensitive(value) { return String(value).replace(/[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}/gi, "••••••"); }
+function logActivity(message) { message = redactSensitive(message); activityEntries.push({ time: new Date().toLocaleTimeString(), message }); if (activityEntries.length > 200) activityEntries.shift(); const target = $("activity-log-lines"); if (target) { const preservedScrollTop = target.scrollTop; target.innerHTML = activityEntries.map(item => `<div class="activity-log-line"><span class="time">${escapeHtml(item.time)}</span>${escapeHtml(item.message)}</div>`).join(""); if (activityAutoScroll) { target.scrollTop = target.scrollHeight; } else { activityPausedScrollTop = preservedScrollTop; target.scrollTop = activityPausedScrollTop; requestAnimationFrame(() => { if (!activityAutoScroll) target.scrollTop = activityPausedScrollTop; }); } } }
+function toggleActivityAutoScroll() { const target = $("activity-log-lines"); activityAutoScroll = !activityAutoScroll; if (!activityAutoScroll && target) activityPausedScrollTop = target.scrollTop; $("activity-autoscroll").textContent = activityAutoScroll ? "Pause auto-scroll" : "Resume auto-scroll"; if (activityAutoScroll && target) { target.scrollTop = target.scrollHeight; } }
+$("show-log").addEventListener("click", event => { event.preventDefault(); event.stopPropagation(); toggleActivityLog(); });
+function toggleTheme() { const goLight = document.documentElement.getAttribute("data-theme") !== "light"; document.documentElement.setAttribute("data-theme", goLight ? "light" : "dark"); document.documentElement.style.colorScheme = goLight ? "light" : "dark"; $("theme-toggle").textContent = goLight ? "🌙" : "☀️"; localStorage.setItem("ai-video:theme", goLight ? "light" : "dark"); }
+function tc(name) { return getComputedStyle(document.documentElement).getPropertyValue("--" + name).trim(); }
+(function applyTheme() { const t = localStorage.getItem("ai-video:theme"); if (t === "light") { document.documentElement.setAttribute("data-theme", "light"); document.documentElement.style.colorScheme = "light"; const btn = $("theme-toggle"); if (btn) btn.textContent = "🌙"; } })();
+$("close-activity-log").addEventListener("click", event => { event.preventDefault(); event.stopPropagation(); $("activity-log").hidden = true; $("show-log").textContent = "Activity log"; });
+function toggleActivityLog() { const panel = $("activity-log"); panel.hidden = !panel.hidden; $("show-log").textContent = "Activity log"; if (!panel.hidden && activityAutoScroll) setTimeout(() => { const target = $("activity-log-lines"); target.scrollTop = target.scrollHeight; }, 0); }
+function clearActivityLog() { activityEntries = []; $("activity-log-lines").innerHTML = ""; }
+let draggingActivityLog = false;
+let activityDragOffset = { x: 0, y: 0 };
+$("activity-log-drag").addEventListener("pointerdown", event => { if (event.button !== undefined && event.button !== 0) return; const panel = $("activity-log"); const rect = panel.getBoundingClientRect(); draggingActivityLog = true; activityDragOffset = { x: event.clientX - rect.left, y: event.clientY - rect.top }; panel.style.right = "auto"; event.preventDefault(); });
+document.addEventListener("pointermove", event => { if (!draggingActivityLog) return; const panel = $("activity-log"); const margin = 8; panel.style.left = `${Math.max(margin, Math.min(window.innerWidth - panel.offsetWidth - margin, event.clientX - activityDragOffset.x))}px`; panel.style.top = `${Math.max(margin, Math.min(window.innerHeight - panel.offsetHeight - margin, event.clientY - activityDragOffset.y))}px`; });
+document.addEventListener("pointerup", () => { draggingActivityLog = false; });
+function show(value) { const text = typeof value === "string" ? value : JSON.stringify(value, null, 2); $("output").textContent = redactSensitive(text); }
+function clearActiveOperation() { const operation = activeOperation; activeOperation = null; const button = operation?.button_id ? $(operation.button_id) : null; if (button) { button.classList.remove("busy"); button.title = ""; button.disabled = false; } }
+function setActiveOperation(operation) { const previous = activeOperation; activeOperation = operation; if (!operation && previous) { const previousButton = $(previous.button_id); if (previousButton) { previousButton.classList.remove("busy"); previousButton.title = ""; } } const button = operation ? $(operation.button_id) : null; if (button) { button.disabled = !!operation.cancelling; button.classList.add("busy"); button.textContent = operation.cancelling ? "Cancelling..." : operation.busy_label; button.title = "Click again to cancel this operation."; } }
+function showConfirmDialog(title, message, options = {}) { return new Promise(resolve => { const backdrop = $("confirm-backdrop"); const titleEl = $("confirm-title"); const msgEl = $("confirm-message"); const yes = $("confirm-yes"); const no = $("confirm-no"); const restart = $("confirm-restart"); const finish = result => { backdrop.hidden = true; yes.onclick = null; no.onclick = null; restart.onclick = null; backdrop.onclick = null; resolve(result); }; titleEl.textContent = title || "Confirm action"; msgEl.textContent = message || "Please confirm this action."; yes.textContent = options.confirmLabel || "Confirm"; no.textContent = options.cancelLabel || "Cancel"; restart.hidden = !options.showRestart; restart.textContent = options.restartLabel || "Restart backend"; backdrop.hidden = false; yes.onclick = () => finish(true); no.onclick = () => finish(false); restart.onclick = () => finish("restart"); backdrop.onclick = event => { if (event.target === backdrop) finish(false); }; no.focus(); }); }
+function showCancelDialog(title, message) { return showConfirmDialog(title || "Terminate operation?", message || "The running operation will be stopped. Partial output will not be approved.", { confirmLabel: "Terminate", cancelLabel: "Continue" }); }
+async function cancelCurrentOperation() { if (!activeOperation || activeOperation.cancelling) return; if (!await showCancelDialog()) return; activeOperation.cancelling = true; setActiveOperation(activeOperation); try { const result = await post("/api/cancel", { project: project(), job_id: activeOperation.job_id || "" }); show(result); } catch (error) { activeOperation.cancelling = false; setActiveOperation(activeOperation); show(`Cancellation failed: ${error.message}`); } }
+$("show-guide").addEventListener("click", () => { if (!$("tour-card").hidden) closeGuide(); else startGuide(); });
+function startGuide() { guideIndex = 0; $("tour-backdrop").hidden = false; $("tour-card").hidden = false; renderGuideStep(); }
+function closeGuide() { if (guideTarget) guideTarget.classList.remove("tour-highlight"); guideTarget = null; $("tour-backdrop").hidden = true; $("tour-card").hidden = true; localStorage.setItem("ai-video:guide-seen", "true"); }
+function renderGuideStep() { if (guideTarget) guideTarget.classList.remove("tour-highlight"); const [id, title, text] = guideSteps[guideIndex]; guideTarget = $(id); if (id === "azure-auth-control") { guideTarget = !$("azure-login").hidden ? $("azure-login") : (!$("azure-logout").hidden ? $("azure-logout") : $("azure-auth-control")); } if (id === "llm-model") guideTarget = $("model-" + $("llm-provider").value); $("tour-title").textContent = `${guideIndex + 1}. ${title}`; $("tour-text").textContent = text; $("tour-back").disabled = guideIndex === 0; $("tour-next").textContent = guideIndex === guideSteps.length - 1 ? "Finish" : "Next"; const card = $("tour-card"); card.hidden = false; if (!guideTarget) return; guideTarget.classList.add("tour-highlight"); guideTarget.scrollIntoView({ block: "center", inline: "nearest", behavior: "auto" }); }
+function nextGuideStep() { if (guideIndex >= guideSteps.length - 1) closeGuide(); else { guideIndex += 1; renderGuideStep(); } }
+function previousGuideStep() { if (guideIndex > 0) { guideIndex -= 1; renderGuideStep(); } }
+window.addEventListener("resize", () => { if (!$("tour-card").hidden) renderGuideStep(); });
+async function get(path) { logActivity(`GET ${path}`); try { const r = await fetch(path); const data = await r.json(); logActivity(`GET ${path} → ${r.status} ${redactSensitive(JSON.stringify(data)).slice(0, 500)}`); if (!r.ok) throw Error(data.error || r.statusText); return data; } catch(e) { logActivity(`GET ${path} ✕ ${e.message}`); throw e; } }
+async function post(path, body) { logActivity(`POST ${path}`); try { const r = await fetch(path, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(body) }); const data = await r.json(); logActivity(`POST ${path} → ${r.status} ${redactSensitive(JSON.stringify(data)).slice(0, 500)}`); if (!r.ok) throw Error(data.error || r.statusText); return data; } catch(e) { logActivity(`POST ${path} ✕ ${e.message}`); throw e; } }
+function fileUrl(path) { return "/api/file?project=" + encodeURIComponent(project()) + "&path=" + encodeURIComponent(path); }
+function textUrl(path) { return "/api/text?project=" + encodeURIComponent(project()) + "&path=" + encodeURIComponent(path); }
+async function loadWorkspaceRoot() { try { return await get("/api/workspace"); } catch(e) { throw e; } }
+let switchingProject = false;
+function validateProjectPath(path) { const state = $("project-path-state"); if (!path) { state.textContent = "Choose a product resource directory."; return false; } state.textContent = "Preparing this directory as the access boundary..."; state.style.color = tc("yellow"); return true; }
+function resetProjectState() { stageInfo = null; workflowRuntime = {}; lastStatusKey = ""; draftDirty = false; draftInstructionsDirty = false; visionDirty = false; subtitleDirty = false; draftLoaded = false; visionReportLoaded = false; subtitleEditorLoaded = false; voiceCatalog = []; loadedVoiceResource = ""; speechReady = false; llmModels = []; modelActivated = false; configuredSubscription = ""; configuredSpeechResource = ""; if (activeOperation) clearActiveOperation(); $("resource-preview").innerHTML = "<p>Scanning the selected product resource directory...</p>"; $("draft").value = ""; $("draft-instructions").value = ""; $("save-draft-instructions").disabled = true; $("save-draft-instructions").textContent = "Save prompt"; $("presentation-instructions").value = ""; $("save-presentation-instructions").disabled = true; $("save-presentation-instructions").textContent = "Save PPT prompt"; $("ppt-source").innerHTML = '<option value="">No source PPT selected</option>'; $("ppt-source-state").textContent = ""; $("ppt-template").innerHTML = '<option value="">Built-in default (dark blue)</option>'; $("draft-state").textContent = "Draft has not been generated."; $("draft-edit-state").textContent = "Draft is not loaded."; $("duration-estimate-state").textContent = ""; $("vision-review").hidden = true; $("vision-state").textContent = "Image analysis is not available until resources are scanned."; $("audio-preview").hidden = true; $("video-review").hidden = true; $("generated-pdf-preview").hidden = true; $("generated-pdf-preview").removeAttribute("src"); $("status").textContent = "Not started"; $("config-state").textContent = "Loading configuration..."; $("save-config").disabled = true; for (const id of ["build-ppt", "build-audio", "build-video", "analyze-images", "generate-draft"]) $(id).disabled = true; updateWorkflow({}); }
+async function prepareProjectSwitch() { if (activeOperation) { if (!await showCancelDialog()) return false; activeOperation.cancelling = true; setActiveOperation(activeOperation); try { await post("/api/cancel", { project: project(), job_id: activeOperation.job_id || "" }); } catch (error) { show(`Previous operation cancellation failed: ${error.message}`); return false; } finally { clearActiveOperation(); } } piStarting = false; try { await post("/api/pi/stop", {}); } catch (_) { /* Pi may already be stopped. */ } resetProjectState(); return true; }
+async function loadSelectedProject() { const selected = displayPath($("project").value.trim()); if (!selected || !validateProjectPath(selected) || switchingProject) return false; switchingProject = true; try { if (!await prepareProjectSwitch()) return false; await post("/api/workspace", { root: selected }); localStorage.setItem(activeProjectStorageKey, selected); $("project-path-state").textContent = "Access boundary set. Loading configuration..."; await loadConfig(); $("project-path-state").textContent = "Configuration loaded. Scanning product resources..."; show({ selected }); await scanResources(); $("project-path-state").textContent = "Product resources loaded."; $("project-path-state").style.color = tc("accent"); if ($("azure-state").textContent.includes("authenticated")) loadSubscriptions(); await startPi(); return true; } catch (error) { $("project-path-state").textContent = `Product resource directory could not be loaded: ${error.message}`; $("project-path-state").style.color = tc("red"); show(error.message); return false; } finally { switchingProject = false; } }
+async function browseProject() { const previousProject = $("project").value; try { show("Opening product resource folder picker..."); const data = await get("/api/browse"); if (!data.path) { show("No folder selected."); return; } $("project").value = displayPath(data.path); await loadSelectedProject(); } catch(e) { $("project").value = previousProject; if (previousProject) localStorage.setItem("ai-video:last-project", displayPath(previousProject)); else localStorage.removeItem("ai-video:last-project"); $("project-path-state").textContent = "Resource folder selection failed. Select a folder inside the workspace and try again."; $("project-path-state").style.color = tc("red"); show(`Product resource folder selection failed: ${e.message}`); } }
+function markConfigSaved() { $("save-config").disabled = true; $("config-state").textContent = "Configuration saved."; draftInstructionsDirty = false; $("save-draft-instructions").disabled = true; $("save-draft-instructions").textContent = "Prompt saved"; $("draft-instructions-state").textContent = ""; presentationInstructionsDirty = false; $("save-presentation-instructions").disabled = true; $("save-presentation-instructions").textContent = "PPT prompt saved"; $("presentation-instructions-state").textContent = ""; }
+function markConfigDirty() { $("save-config").disabled = false; $("config-state").textContent = "Configuration changed. Click save to apply it."; }
+function markDraftInstructionsDirty() { draftInstructionsDirty = true; $("save-draft-instructions").disabled = false; $("save-draft-instructions").textContent = "Save prompt"; $("draft-instructions-state").textContent = "Prompt changed. It will be used for the next draft generation; save it here to reuse it later."; }
+function markPresentationInstructionsDirty() { presentationInstructionsDirty = true; $("save-presentation-instructions").disabled = false; $("save-presentation-instructions").textContent = "Save PPT prompt"; $("presentation-instructions-state").textContent = "PPT prompt changed. Save it before building the PPT."; }
+async function loadDraftInstructions() { try { if (draftInstructionsDirty && !await showConfirmDialog("Load saved draft prompt?", "Your current draft prompt has unsaved changes. Loading the saved version will discard them.", { confirmLabel: "Discard changes", cancelLabel: "Keep editing" })) return; const data = await get("/api/config?project=" + encodeURIComponent(project())); $("draft-instructions").value = data.draft_instructions || ""; draftInstructionsDirty = false; $("save-draft-instructions").disabled = true; $("save-draft-instructions").textContent = "Prompt loaded"; $("draft-instructions-state").textContent = "Loaded the saved draft prompt."; } catch(e) { $("draft-instructions-state").textContent = `Prompt load failed: ${e.message}`; show(e.message); } }
+async function saveDraftInstructions() { const button = $("save-draft-instructions"); try { button.disabled = true; button.textContent = "Saving prompt..."; const instructions = $("draft-instructions").value.trim(); try { await post("/api/draft-instructions", { project: project(), draft_instructions: instructions }); } catch (error) { if (error.message !== "not found") throw error; // Keep working with a server process started before the dedicated endpoint was added.
+      await post("/api/config", { project: project(), subscription_id: $("subscription").value, speech_resource_id: $("speech_resource").value, vision_enabled: $("vision_enabled").checked, llm_provider: $("llm-provider").value, llm_model: $("llm-model").value, primary_language: $("primary_language").value, secondary_language: $("secondary_language").value, primary_voice: $("primary_voice").value, secondary_voice: $("secondary_voice").value, target_duration_seconds: $("target_duration_seconds").value.trim(), draft_instructions: instructions, presentation_instructions: $("presentation-instructions").value.trim(), presentation_source: $("ppt-source").value, presentation_sources: Array.from($("ppt-source").selectedOptions).map(option => option.value), presentation_template: $("ppt-template").value }); }
+      draftInstructionsDirty = false; button.textContent = "Prompt saved"; $("draft-instructions-state").textContent = "Prompt saved. It will be reused for future draft generations."; } catch(e) { button.disabled = false; button.textContent = "Save prompt"; $("draft-instructions-state").textContent = `Prompt save failed: ${e.message}`; show(e.message); } }
+async function loadPresentationInstructions() { try { if (presentationInstructionsDirty && !await showConfirmDialog("Load saved PPT prompt?", "Your current PPT prompt has unsaved changes. Loading the saved version will discard them.", { confirmLabel: "Discard changes", cancelLabel: "Keep editing" })) return; const data = await get("/api/config?project=" + encodeURIComponent(project())); $("presentation-instructions").value = data.presentation_instructions || ""; presentationInstructionsDirty = false; $("save-presentation-instructions").disabled = true; $("save-presentation-instructions").textContent = "PPT prompt loaded"; $("presentation-instructions-state").textContent = "Loaded the saved PPT prompt."; } catch(e) { $("presentation-instructions-state").textContent = `PPT prompt load failed: ${e.message}`; show(e.message); } }
+async function savePresentationInstructions() { const button = $("save-presentation-instructions"); try { button.disabled = true; button.textContent = "Saving PPT prompt..."; const instructions = $("presentation-instructions").value.trim(); try { await post("/api/presentation-instructions", { project: project(), presentation_instructions: instructions }); } catch (error) { if (error.message !== "not found") throw error; await post("/api/config", { project: project(), subscription_id: $("subscription").value, speech_resource_id: $("speech_resource").value, vision_enabled: $("vision_enabled").checked, llm_provider: $("llm-provider").value, llm_model: $("llm-model").value, primary_language: $("primary_language").value, secondary_language: $("secondary_language").value, primary_voice: $("primary_voice").value, secondary_voice: $("secondary_voice").value, target_duration_seconds: $("target_duration_seconds").value.trim(), draft_instructions: $("draft-instructions").value.trim(), presentation_instructions: instructions, presentation_source: $("ppt-source").value, presentation_sources: Array.from($("ppt-source").selectedOptions).map(option => option.value), presentation_template: $("ppt-template").value }); }
+      presentationInstructionsDirty = false; button.textContent = "PPT prompt saved"; $("presentation-instructions-state").textContent = "PPT prompt saved. It will be reused for future PPT generations."; } catch(e) { button.disabled = false; button.textContent = "Save PPT prompt"; $("presentation-instructions-state").textContent = `PPT prompt save failed: ${e.message}`; show(e.message); } }
+async function loadConfig() { try { const data = await get("/api/config?project=" + encodeURIComponent(project())); $("primary_language").value = data.primary_language || "en-US"; $("secondary_language").value = data.secondary_language || "zh-CN"; $("primary_voice").value = data.primary_voice || "en-US-JennyNeural"; $("secondary_voice").value = data.secondary_voice || "zh-CN-YunyangNeural"; $("target_duration_seconds").value = data.target_duration_seconds || ""; $("vision_enabled").checked = data.vision_enabled !== false; configuredLlmProvider = data.content_generation_provider || "codemie"; $("llm-provider").value = configuredLlmProvider; const providerRadio = document.querySelector(`input[name="provider-choice"][value="${configuredLlmProvider}"]`); if (providerRadio) providerRadio.checked = true; providerTokenValid = configuredLlmProvider === "codemie" || configuredLlmProvider === "codemie-cli"; configuredLlmModel = data.content_generation_model || ""; $("vision_enabled").checked = data.vision_enabled !== false; configuredSubscription = data.subscription_id || ""; if (data.subscription_id) $("subscription").value = data.subscription_id; configuredSpeechResource = data.speech_resource_id || ""; if (data.speech_resource_id) $("speech_resource").value = data.speech_resource_id; $("draft-instructions").value = data.draft_instructions || ""; $("presentation-instructions").value = data.presentation_instructions || ""; if (Array.isArray(data.presentation_sources) && data.presentation_sources.length) Array.from($("ppt-source").options).forEach(option => { option.selected = data.presentation_sources.includes(option.value); }); else if (data.presentation_source && Array.from($("ppt-source").options).some(o => o.value === data.presentation_source)) $("ppt-source").value = data.presentation_source; else $("ppt-source").value = ""; if (data.presentation_template) { const sel = $("ppt-template"); const existing = Array.from(sel.options).some(o => o.value === data.presentation_template); if (!existing) { const o = document.createElement("option"); o.value = data.presentation_template; o.textContent = data.presentation_template; sel.appendChild(o); } sel.value = data.presentation_template; } else { $("ppt-template").value = ""; } if (configuredLlmProvider === "dial" || configuredLlmProvider === "elitea" || isPiInternalProvider(configuredLlmProvider)) providerChanged(); else if (llmModels.length) loadLlmModels(); markConfigSaved(); } catch(e) { $("config-state").textContent = "Configuration could not be loaded."; show(`Configuration loading failed: ${e.message}`); } }
+async function saveConfig() { try { const duration = $("target_duration_seconds").value.trim(); if (duration && (!Number.isFinite(Number(duration)) || Number(duration) < 30)) { const message = "Target duration must be a number of at least 30 seconds, or leave it blank for automatic audio duration."; show(message); $("config-state").textContent = message; return; } let inspection = null; try { inspection = await get("/api/inspect?project=" + encodeURIComponent(project())); } catch (error) { show(`Configuration inspection warning: ${error.message}`); } const hasSourcePptSelection = $("ppt-source").selectedOptions.length > 0; const nonResourceErrors = (inspection?.errors || []).filter(error => !(hasSourcePptSelection && /Configure sources\.presentation/.test(error))); if (nonResourceErrors.length) { const message = "Configuration has errors:\n\n" + nonResourceErrors.join("\n"); show(message); $("config-state").textContent = message; return; } const result = await post("/api/config", { project: project(), subscription_id: $("subscription").value, speech_resource_id: $("speech_resource").value, vision_enabled: $("vision_enabled").checked, llm_provider: $("llm-provider").value, llm_model: $("llm-model").value, primary_language: $("primary_language").value, secondary_language: $("secondary_language").value, primary_voice: $("primary_voice").value, secondary_voice: $("secondary_voice").value, target_duration_seconds: duration, draft_instructions: $("draft-instructions").value.trim(), presentation_instructions: $("presentation-instructions").value.trim(), presentation_source: $("ppt-source").value, presentation_sources: Array.from($("ppt-source").selectedOptions).map(option => option.value), presentation_template: $("ppt-template").value }); show(result); markConfigSaved(); await refreshStages(); if (inspection?.errors?.some(error => /Configure sources\.presentation or sources\.content_files/i.test(error))) $("config-state").textContent = "Configuration saved. Add product resources before starting the build."; } catch(e) { $("config-state").textContent = `Configuration save failed: ${e.message}`; show(e.message); } }
+async function scanResources() { try { const data = await get("/api/scan?project=" + encodeURIComponent(project())); show(data); renderResources(data.resources); const tplSel = $("ppt-template"); const sourceSel = $("ppt-source"); const currentTpl = tplSel.value; const currentSource = sourceSel.value; tplSel.innerHTML = '<option value="">Built-in default (dark blue)</option>'; sourceSel.innerHTML = '<option value="">No source PPT selected</option>'; for (const f of (data.pptx_template_candidates || [])) { const o = document.createElement("option"); o.value = f; o.textContent = f; tplSel.appendChild(o); } for (const f of (data.pptx_source_candidates || [])) { const o = document.createElement("option"); o.value = f; o.textContent = f; sourceSel.appendChild(o); } if (currentTpl && Array.from(tplSel.options).some(o => o.value === currentTpl)) tplSel.value = currentTpl; if (currentSource && Array.from(sourceSel.options).some(o => o.value === currentSource)) sourceSel.value = currentSource; const resourceCount = Object.values(data.resources || {}).reduce((total, items) => total + (Array.isArray(items) ? items.length : 0), 0); const refreshButton = $("refresh-resources"); if (refreshButton) refreshButton.disabled = false; const pathState = $("project-path-state"); if (!resourceCount) { pathState.textContent = "No supported product resources found. Add a document, image, table, PDF/DOCX, or presentation to continue."; pathState.style.color = tc("yellow"); } await loadConfig(); await refreshStages(); if ($("azure-state").textContent.includes("authenticated")) loadSubscriptions(); return data; } catch(e) { show(e.message); throw e; } }
+function setAzureState(data) { const state = $("azure-state"); const loginButton = $("azure-login"); const logoutButton = $("azure-logout"); const authenticated = data.status === "authenticated" || data.status === "already_authenticated"; state.textContent = authenticated ? "Azure: authenticated" : "Azure: not authenticated"; loginButton.hidden = authenticated; loginButton.disabled = false; loginButton.textContent = "Login Azure"; logoutButton.hidden = !authenticated; }
+async function waitForAzureLogin(attempt = 0) { if (attempt >= 60) { show("Azure login timed out. Click Login Azure to try again."); return; } try { const data = await get("/api/azure/status"); setAzureState(data); if (data.status === "authenticated" || data.status === "already_authenticated") { await loadSubscriptions(true); show(data); return; } show(`Waiting for Azure browser authentication... ${attempt + 1}/60`); setTimeout(() => waitForAzureLogin(attempt + 1), 2000); } catch(e) { show(e.message); } }
+async function loadSubscriptions(force = false) { const state = $("subscription-state"); try { state.textContent = "Loading Azure subscriptions..."; const response = await get("/api/azure/subscriptions?project=" + encodeURIComponent(project()) + "&refresh=" + (force ? "1" : "0")); const data = response.subscriptions || []; const select = $("subscription"); select.innerHTML = ""; for (const item of data) { const option = document.createElement("option"); option.value = item.subscription_id; option.textContent = `${item.display_name || "Subscription"} (${maskSubscriptionId(item.subscription_id)}) [${item.state || ""}]`; select.appendChild(option); } if (configuredSubscription && [...select.options].some(option => option.value === configuredSubscription)) select.value = configuredSubscription; if (select.value) azureResources(); if (!data.length) { const option = document.createElement("option"); option.value = ""; option.textContent = "No accessible Azure subscriptions"; select.appendChild(option); state.textContent = "No accessible Azure subscriptions."; } else { state.textContent = response.cached ? `${data.length} Azure subscription${data.length === 1 ? "" : "s"} loaded from local cache.` : `${data.length} Azure subscription${data.length === 1 ? "" : "s"} loaded.`; } show(response); } catch(e) { $("subscription").innerHTML = "<option value=\"\">Subscription loading failed</option>"; state.textContent = "Subscription loading failed."; show(`Subscription discovery failed: ${e.message}`); } }
+async function azureLogin() { try { show("Opening Azure login..."); const data = await post("/api/azure/login", {}); setAzureState(data); if (data.status === "login_started") waitForAzureLogin(); else { show(data); loadSubscriptions(true); } } catch(e) { $("azure-state").textContent = "Azure: login required"; show(e.message); } }
+async function azureLogout() { try { const data = await post("/api/azure/logout", {}); await post("/api/azure/subscriptions/cache-clear", {}); setAzureState(data); show(data); } catch(e) { show(e.message); } }
+async function azureStatus() { try { const data = await get("/api/azure/status?project=" + encodeURIComponent(project())); setAzureState(data); show(data); if (data.status === "authenticated") loadSubscriptions(); } catch(e) { $("azure-state").textContent = "Azure: login required"; show(e.message); } }
+azureStatus();
+async function azureResources(force = false) { const button = $("discover-resources"); const state = $("speech-state"); try { speechLoading = true; updateWorkflow({ speech_loading: true }); button.disabled = true; button.textContent = "Discovering Speech resources..."; state.textContent = "Querying Azure resources..."; state.style.color = tc("text-label"); show("Discovering Azure Speech resources..."); const data = await get("/api/azure/resources?project=" + encodeURIComponent(project()) + "&subscription=" + encodeURIComponent($("subscription").value) + "&refresh=" + (force ? "1" : "0")); const select = $("speech_resource"); select.innerHTML = ""; for (const resource of data.resources || []) { const option = document.createElement("option"); option.value = resource.id; option.textContent = `${resource.name} (${resource.location})`; select.appendChild(option); } if (configuredSpeechResource && [...select.options].some(option => option.value === configuredSpeechResource)) select.value = configuredSpeechResource; speechReady = false; voiceCatalog = []; loadedVoiceResource = ""; if (select.value) await loadVoices(false); state.textContent = data.count ? (data.cached ? "Speech resources loaded from local cache." : data.message) : "No Azure Speech resource was found. Sign in to the Azure Portal to create one, then refresh Speech resources."; state.style.color = data.count ? tc("accent") : tc("yellow"); updateSpeechAvailability(); show(data); } catch(e) { speechReady = false; updateSpeechAvailability(); state.textContent = `Speech resource discovery failed: ${e.message}`; state.style.color = tc("red"); show(e.message); } finally { speechLoading = false; updateWorkflow({ speech_loading: false }); button.disabled = false; button.textContent = "Refresh Speech resources"; } }
+let voiceCatalog = [];
+let voiceLoading = false;
+let speechReady = false;
+function updateSpeechAvailability() {
+  speechReady = !!$("speech_resource")?.value && voiceCatalog.length > 0;
+  const buildAudio = $("build-audio");
+  if (buildAudio && stageInfo) buildAudio.disabled = !stageInfo.approvals?.presentation || !speechReady;
+}
+let loadedVoiceResource = "";
+function voiceLocale(voice) { return voice.Locale || voice.locale || ""; }
+function voiceName(voice) { return voice.ShortName || voice.short_name || ""; }
+function populateLanguages() {
+  const locales = [...new Set(voiceCatalog.map(voiceLocale).filter(Boolean))].sort();
+  for (const [id, fallback, allowed] of [["primary_language", "en-US", locale => locale.toLowerCase().startsWith("en-")], ["secondary_language", "zh-CN", () => true]]) {
+    const select = $(id); const current = select.value || fallback; select.innerHTML = "";
+    for (const locale of locales.filter(allowed)) { const option = document.createElement("option"); option.value = locale; option.textContent = locale; select.appendChild(option); }
+    if (!locales.includes(current)) { const option = document.createElement("option"); option.value = current; option.textContent = current; select.appendChild(option); }
+    select.value = current;
+  }
+  filterVoices();
+}
+function filterVoiceSelect(selectId, languageId, fallback) {
+  const select = $(selectId); const current = select.value; const language = $(languageId).value; select.innerHTML = "";
+  for (const voice of voiceCatalog.filter(item => voiceLocale(item) === language)) { const option = document.createElement("option"); option.value = voiceName(voice); option.textContent = `${voiceName(voice)} (${voice.Gender || voice.gender || ""})`; select.appendChild(option); }
+  if (!select.options.length) { const option = document.createElement("option"); option.value = fallback; option.textContent = fallback; select.appendChild(option); }
+  if ([...select.options].some(option => option.value === current)) select.value = current;
+}
+function filterVoices() { filterVoiceSelect("primary_voice", "primary_language", "en-US-JennyNeural"); filterVoiceSelect("secondary_voice", "secondary_language", "zh-CN-YunyangNeural"); }
+async function previewVoice(kind) { const language = $(kind === "primary" ? "primary_language" : "secondary_language").value; const voice = $(kind === "primary" ? "primary_voice" : "secondary_voice").value; const button = $(kind === "primary" ? "preview-primary-voice" : "preview-secondary-voice"); const audio = $(kind === "primary" ? "primary-voice-preview" : "secondary-voice-preview"); if (!voice || !language || !$("speech_resource").value) { show("Select a Speech resource, language, and voice before previewing."); return; } const original = button.textContent; button.disabled = true; button.textContent = "Loading..."; try { const data = await post("/api/azure/voice-preview", { project: project(), subscription: $("subscription").value, resource_id: $("speech_resource").value, language, voice }); audio.src = fileUrl(data.path) + "&preview=" + Date.now(); audio.hidden = false; await audio.play().catch(() => {}); } catch(e) { show(`Voice preview failed: ${e.message}`); } finally { button.disabled = false; button.textContent = original; } }
+async function loadVoices(force = false) { const button = $("load-voices"); const state = $("voice-state"); const id = $("speech_resource").value; if (!id) { speechReady = false; updateSpeechAvailability(); show("Select a Speech resource first."); return; } if (!force && (voiceLoading || loadedVoiceResource === id)) return; voiceLoading = true; try { const cacheKey = `ai-video:voice-catalog:${$("subscription").value}:${id}`; if (!force) { const browserCache = localStorage.getItem(cacheKey); if (browserCache) { const cached = JSON.parse(browserCache); voiceCatalog = cached.voices || []; loadedVoiceResource = id; populateLanguages(); state.textContent = `Loaded ${voiceCatalog.length} voices from browser cache.`; updateSpeechAvailability(); return; } } speechLoading = true; updateWorkflow({ speech_loading: true }); button.disabled = true; button.textContent = "Loading Voice catalog..."; state.textContent = "Loading supported Azure Speech voices..."; const data = await get("/api/azure/voices?project=" + encodeURIComponent(project()) + "&resource_id=" + encodeURIComponent(id) + "&subscription=" + encodeURIComponent($("subscription").value) + "&refresh=" + (force ? "1" : "0")); voiceCatalog = data.voices || []; loadedVoiceResource = id; localStorage.setItem(cacheKey, JSON.stringify({ voices: voiceCatalog, loaded_at: Date.now() })); populateLanguages(); state.textContent = `Loaded ${voiceCatalog.length} voices${data.cached ? " from local cache" : " from Azure"}.`; updateSpeechAvailability(); show({ resource: data.resource, voice_count: voiceCatalog.length, locales: [...new Set(voiceCatalog.map(voiceLocale))].sort() }); } catch(e) { speechReady = false; updateSpeechAvailability(); state.textContent = "Voice catalog loading failed."; show(e.message); } finally { speechLoading = false; voiceLoading = false; updateWorkflow({ speech_loading: false }); button.disabled = false; button.textContent = "Refresh Voice catalog"; } }
+function addGroup(root, title) { const group = document.createElement("div"); group.className = "resource-group"; const heading = document.createElement("h3"); heading.textContent = title; group.appendChild(heading); root.appendChild(group); return group; }
+function addAsset(group, path, kind) { const asset = document.createElement("div"); asset.className = "asset"; const name = document.createElement("div"); name.className = "asset-name"; name.textContent = path; asset.appendChild(name); const url = fileUrl(path); if (kind === "image") { const link = document.createElement("a"); link.href = url; link.target = "_blank"; const img = document.createElement("img"); img.className = "preview"; img.src = url; img.alt = path; link.appendChild(img); asset.appendChild(link); } else if (kind === "video") { const video = document.createElement("video"); video.className = "preview"; video.controls = true; video.src = url; asset.appendChild(video); } else if (kind === "audio") { const audio = document.createElement("audio"); audio.className = "preview"; audio.controls = true; audio.src = url; asset.appendChild(audio); } else if (kind === "pdf") { const iframe = document.createElement("iframe"); iframe.className = "pdf-preview"; iframe.src = url; asset.appendChild(iframe); } else if (kind === "presentation") { const link = document.createElement("a"); link.href = url; link.target = "_blank"; link.textContent = "Download PPTX"; asset.appendChild(link); } else { const button = document.createElement("button"); button.textContent = "View text"; let pre = null; button.onclick = async () => { if (pre) { pre.remove(); pre = null; button.textContent = "View text"; return; } try { const data = await get(textUrl(path)); pre = document.createElement("pre"); pre.textContent = data.text; asset.appendChild(pre); button.textContent = "Hide text"; } catch(e) { show(e.message); } }; asset.appendChild(button); } group.appendChild(asset); }
+function renderResources(resources) { const target = $("resource-preview"); target.innerHTML = ""; const groups = {}; const group = title => groups[title] || (groups[title] = addGroup(target, title)); for (const path of resources.image || []) addAsset(group("Images"), path, "image"); for (const path of resources.video || []) addAsset(group("Videos"), path, "video"); for (const path of resources.audio || []) addAsset(group("Audio"), path, "audio"); for (const path of resources.presentation || []) addAsset(group("Presentations"), path, "presentation"); for (const path of (resources.content || []).filter(path => /\.pdf$/i.test(path))) addAsset(group("PDF documents"), path, "pdf"); for (const path of (resources.content || []).filter(path => !/\.pdf$/i.test(path))) addAsset(group("Documents"), path, "text"); for (const path of resources.table || []) addAsset(group("Tables"), path, "text"); }
+let stageInfo = null;
+let draftDirty = false;
+let draftInstructionsDirty = false;
+let presentationInstructionsDirty = false;
+let llmModels = [];
+let selectedVisionCapable = false;
+let configuredLlmProvider = localStorage.getItem("ai-video:last-llm-provider") || "codemie";
+let internalPiProviderIds = new Set();
+let piExtensionProviderIds = new Set();
+let providerTokenValid = configuredLlmProvider === "codemie" || configuredLlmProvider === "codemie-cli";
+let workflowRuntime = {};
+let speechLoading = false;
+let configuredLlmModel = localStorage.getItem("ai-video:last-llm-model") || "";
+let visionDirty = false;
+let visionReportLoaded = false;
+let draftLoaded = false;
+let lastStatusKey = "";
+let loadedPdfUrl = "";
+let subtitleCues = { primary: [], secondary: [] };
+let loadedSubtitleUrls = { primary: "", secondary: "" };
+let subtitleEditorLoaded = false;
+let subtitleDirty = false;
+let dualAudioTrack = "embedded";
+let modelActivated = false;
+const modelTestResults = new Map();
+const modelTestInFlight = new Map();
+$("llm-provider").value = configuredLlmProvider;
+const initialProviderRadio = document.querySelector(`input[name="provider-choice"][value="${configuredLlmProvider}"]`);
+if (initialProviderRadio) initialProviderRadio.checked = true;
+function setDraftDirty(dirty) { draftDirty = dirty; $("save-draft").disabled = !dirty; $("save-draft").textContent = dirty ? "Save draft" : "Draft saved"; $("draft-edit-state").textContent = dirty ? "Draft changed. Click Save draft to apply modifications." : "Draft is loaded and saved."; }
+async function refreshServiceStatus() { try { const data = await get("/api/service-status"); const jobs = (data.jobs || []).filter(job => ["queued", "running"].includes(job.status)); $("service-state").textContent = [`PID: ${data.pid || "-"}`, `HTTP: http://${data.host || "127.0.0.1"}:${data.port || "-"}`, `WebSocket: ${data.websocket_port || "-"}`, `Mode: ${data.debug ? "Debug" : "Normal (hidden)"}`, `Pi: ${data.pi?.running ? "running" : "stopped"}`, `Active jobs: ${jobs.length}`, `Logs: ${data.log_path || "-"}`, `Errors: ${data.error_log_path || "-"}`, `Pi log: ${data.pi_log_path || "-"}`].join("\n"); if (!$('backend-log-section').hidden && $('backend-log-section').open) refreshServiceLog(); } catch(e) { $("service-state").textContent = `Service status unavailable: ${e.message}`; } }
+async function refreshServiceLog() { try { const data = await get("/api/service-log?tail=300"); const target = $("service-log"); target.textContent = data.text || "No backend log output is available yet."; if (serviceLogAutoScroll) target.scrollTop = target.scrollHeight; } catch(e) { $("service-log").textContent = `Backend log unavailable: ${e.message}`; } }
+function toggleServiceLogAutoScroll() { serviceLogAutoScroll = !serviceLogAutoScroll; $("backend-log-autoscroll").textContent = serviceLogAutoScroll ? "Pause auto-scroll" : "Resume auto-scroll"; if (serviceLogAutoScroll) refreshServiceLog(); }
+$("backend-log-section").addEventListener("toggle", () => { if ($("backend-log-section").open) refreshServiceLog(); });
+async function restartBackendService() { $("service-state").textContent = "Restarting backend service..."; try { await post("/api/restart", {}); } catch (_) { /* The old process may close before the response finishes. */ } setTimeout(() => location.reload(), 1800); }
+async function shutdownApplication() { const choice = await showConfirmDialog("Exit application?", "The backend service and Pi will be stopped. Any running build will be cancelled.", { confirmLabel: "Exit", cancelLabel: "Cancel", showRestart: true }); if (choice === "restart") { await restartBackendService(); return; } if (choice !== true) return; try { $("service-state").textContent = "Stopping backend service..."; await post("/api/shutdown", {}); $("service-state").textContent = "Backend service stopped. You can close this browser tab."; setTimeout(() => { try { window.close(); } catch (_) {} }, 300); } catch(e) { $("service-state").textContent = `Shutdown failed: ${e.message}`; } }
+function openProgressPanel() { $("progress-panel").hidden = false; refreshServiceStatus(); }
+function toggleProgressPanel() { $("progress-panel").hidden = !$("progress-panel").hidden; if (!$("progress-panel").hidden) refreshServiceStatus(); }
+function closeProgressPanel() { $("progress-panel").hidden = true; }
+let draggingProgress = false;
+let progressDragOffset = { x: 0, y: 0 };
+$("progress-drag").addEventListener("pointerdown", event => { if (event.button !== undefined && event.button !== 0) return; const panel = $("progress-panel"); const rect = panel.getBoundingClientRect(); draggingProgress = true; progressDragOffset = { x: event.clientX - rect.left, y: event.clientY - rect.top }; panel.style.right = "auto"; panel.style.bottom = "auto"; event.preventDefault(); });
+document.addEventListener("pointermove", event => { if (!draggingProgress) return; const panel = $("progress-panel"); const margin = 8; panel.style.left = `${Math.max(margin, Math.min(window.innerWidth - panel.offsetWidth - margin, event.clientX - progressDragOffset.x))}px`; panel.style.top = `${Math.max(margin, Math.min(window.innerHeight - panel.offsetHeight - margin, event.clientY - progressDragOffset.y))}px`; });
+document.addEventListener("pointerup", () => { draggingProgress = false; });
+let draggingWorkflow = false;
+let workflowDragOffset = { x: 0, y: 0 };
+$("workflow-drag").addEventListener("pointerdown", event => { if (event.button !== undefined && event.button !== 0) return; const panel = $("workflow-panel"); const rect = panel.getBoundingClientRect(); draggingWorkflow = true; workflowDragOffset = { x: event.clientX - rect.left, y: event.clientY - rect.top }; panel.style.right = "auto"; panel.style.bottom = "auto"; event.preventDefault(); });
+document.addEventListener("pointermove", event => { if (!draggingWorkflow) return; const panel = $("workflow-panel"); const margin = 8; panel.style.left = `${Math.max(margin, Math.min(window.innerWidth - panel.offsetWidth - margin, event.clientX - workflowDragOffset.x))}px`; panel.style.top = `${Math.max(margin, Math.min(window.innerHeight - panel.offsetHeight - margin, event.clientY - workflowDragOffset.y))}px`; });
+document.addEventListener("pointerup", () => { draggingWorkflow = false; });
+function toggleWorkflowPanel() { const panel = $("workflow-panel"); const button = $("show-workflow"); panel.hidden = !panel.hidden; button.hidden = !panel.hidden; document.body.classList.toggle("workflow-open", !panel.hidden); }
+function updateWorkflow(data = {}) { workflowRuntime = { ...workflowRuntime, ...data }; const approvals = workflowRuntime.approvals || {}; const steps = [["resources", "Resources", !!$("project")?.value && !!stageInfo], ["azure", "Azure", $("azure-state")?.textContent.includes("authenticated")], ["auth", "Provider", $("codemie-state")?.textContent.includes("authenticated")], ["speech", "Speech", !!$("speech_resource")?.value && voiceCatalog.length > 0], ["vision", "Vision", !workflowRuntime.vision_input_count || approvals.vision], ["draft", "Draft", !!approvals.draft], ["ppt", "PPT", !!approvals.presentation || (!!workflowRuntime.presentation && !!workflowRuntime.pdf)], ["audio", "Audio", !!approvals.audio], ["subtitles", "Subtitles", !!approvals.subtitles], ["video", "Video", !!workflowRuntime.video], ["local", "Delivery", workflowRuntime.status === "completed" && workflowRuntime.video]]; const stageMap = { resource_validation: "resources", azure_resource_discovery: "speech", vision_analysis: "vision", content_draft: "draft", presentation_ready: "ppt", speech_synthesis: "audio", subtitle_generation: "subtitles", audio_ready: "subtitles", video_rendering: "video", video_ready: "local", completed: "local" }; const current = speechLoading ? "speech" : stageMap[workflowRuntime.stage]; $("workflow-steps").innerHTML = steps.map(([key, label, done]) => { const state = done ? "completed" : workflowRuntime.status === "failed" && key === current ? "failed" : key === current && (speechLoading || !done) ? "current" : ""; const icon = state === "completed" ? "✓" : state === "failed" ? "✕" : state === "current" ? "●" : "○"; return `<div class="workflow-step ${state}" data-workflow-stage="${key}">${icon} ${label}</div>`; }).join(""); $("workflow-steps").querySelectorAll("[data-workflow-stage]").forEach(item => item.onclick = () => scrollToWorkflowStage(item.dataset.workflowStage)); }
+function scrollToWorkflowStage(stage) { if (stage === "local") { openProgressPanel(); return; } const targets = { resources: "browse-project", azure: "azure-auth-control", auth: "pi-controls", speech: "speech-state", vision: "analyze-images", draft: "generate-draft", ppt: "build-ppt", audio: "build-audio", subtitles: "build-video", video: "build-video" }; const target = $(targets[stage]); if (!target) return; target.scrollIntoView({ behavior: "smooth", block: "center" }); target.classList.add("workflow-focus"); setTimeout(() => target.classList.remove("workflow-focus"), 1600); }
+function updateStageControls(data) { const approvals = data.approvals || {}; if (activeOperation?.stage === "presentation" && data.pdf) clearActiveOperation(); if (activeOperation?.stage === "audio" && data.audio && data.subtitles) clearActiveOperation(); if (activeOperation?.stage === "video" && data.video) clearActiveOperation(); stageInfo = data; $("ppt-source-state").textContent = data.presentation_source_required ? "Multiple PPT files found. Select a source presentation before building." : (data.presentation && data.pdf && !approvals.presentation ? "PPT/PDF generated and ready for review. Starting audio will accept them." : ""); updateWorkflow(data); updateSubtitleButtons(); $("build-ppt").textContent = data.pdf ? "Regenerate PPT" : "Build PPT"; $("build-audio").textContent = data.audio_build_running ? "Building audio + subtitles..." : (data.audio ? "Regenerate audio + subtitles" : "Build audio + subtitles"); $("audio-build-state").textContent = data.audio_build_running ? "Audio and subtitle generation is running..." : (!speechReady ? "Select a Speech resource and load the Voice catalog." : ""); $("build-audio").title = data.audio_build_running ? "Audio and subtitle generation is running." : (!speechReady ? "Select a Speech resource and load the Voice catalog." : ""); $("build-video").textContent = data.build_running ? "Building video..." : (data.video ? "Regenerate video" : "Build video"); $("actual-duration").textContent = data.actual_duration_seconds ? `Actual audio duration: ${data.actual_duration_seconds} seconds.` : "Actual audio duration: not generated."; $("duration-state").textContent = data.duration_warning ? `Duration differs from target (${data.actual_duration_seconds ?? '?'}s vs ${data.target_duration_seconds ?? '?'}s). The build will proceed with the approved draft.` : "";
+    // Draft-stage duration estimate (shown before audio is generated)
+    const estEl = $("duration-estimate-state");
+    if (data.estimated_duration_seconds != null && !data.audio) {
+      const est = data.estimated_duration_seconds;
+      const tgt = data.target_duration_seconds;
+      if (data.duration_estimate_warning) {
+        estEl.textContent = `Estimated narration: ~${est}s — may be too short for the ${tgt}s target. Consider expanding content.`;
+        estEl.style.color = tc("yellow");
+      } else {
+        estEl.textContent = `Estimated narration: ~${est}s (target: ${tgt}s).`;
+        estEl.style.color = tc("text-dim");
+      }
+    } else if (!data.audio) {
+      estEl.textContent = "";
+      estEl.style.color = "";
+    }
+    if (data.presentation_generated) { $("ppt-link").hidden = false; const pptUrl = fileUrl(data.presentation_path); if ($("ppt-link").href !== new URL(pptUrl, location.href).href) $("ppt-link").href = pptUrl; } else { $("ppt-link").hidden = true; } if (data.pdf) { $("pdf-link").hidden = false; const pdfUrl = fileUrl(data.pdf_path); if ($("pdf-link").href !== new URL(pdfUrl, location.href).href) $("pdf-link").href = pdfUrl; $("generated-pdf-preview").hidden = false; if (loadedPdfUrl !== pdfUrl) { loadedPdfUrl = pdfUrl; $("generated-pdf-preview").src = pdfUrl; } } else if (!$("generated-pdf-preview").hidden) { loadedPdfUrl = ""; $("generated-pdf-preview").hidden = true; $("generated-pdf-preview").removeAttribute("src"); } $("load-draft").disabled = !data.draft; $("approve-draft").disabled = !data.draft || !!approvals.draft; $("approve-draft").textContent = approvals.draft ? "Draft approved" : "Approve draft"; $("analyze-images").disabled = !data.vision_input_count || !data.vision_enabled || !selectedVisionCapable || (data.vision && !approvals.vision); $("vision-state").textContent = data.vision ? (approvals.vision ? "Vision analysis approved." : "Vision analysis ready. Approve it before building.") : (data.vision_input_count ? (!selectedVisionCapable ? "Select a Vision-capable CodeMie model to enable image analysis." : (data.vision_enabled ? "Images available. Analyze images before building." : "Enable Vision image analysis and save configuration first.")) : "Image analysis is not available until images are scanned."); $("approve-vision").disabled = !data.vision || !!approvals.vision || visionDirty; $("approve-vision").textContent = approvals.vision ? "Vision approved" : "Approve Vision"; $("save-vision").disabled = !data.vision || !visionDirty; if (data.audio) { $("audio-preview").hidden = false; const primaryAudioUrl = fileUrl(data.review_audio_primary || ".video-work/primary.wav"); const secondaryAudioUrl = fileUrl(data.review_audio_secondary || ".video-work/secondary.wav"); if ($("primary-audio-preview").src !== new URL(primaryAudioUrl, location.href).href) $("primary-audio-preview").src = primaryAudioUrl; if ($("secondary-audio-preview").src !== new URL(secondaryAudioUrl, location.href).href) $("secondary-audio-preview").src = secondaryAudioUrl; if (data.subtitles || data.audio) { $("subtitle-review").hidden = false; $("subtitle-editor-panel").hidden = false; for (const [id, path] of [["primary-srt-link", "outputs/presentation-primary.srt"], ["secondary-srt-link", "outputs/presentation-secondary.srt"], ["bilingual-srt-link", "outputs/presentation-bilingual.srt"], ["bilingual-vtt-link", "outputs/presentation-bilingual.vtt"]]) { const link = $(id); link.hidden = false; const url = fileUrl(path); if (link.href !== new URL(url, location.href).href) link.href = url; } } } else if (!$("audio-preview").hidden) { $("audio-preview").hidden = true; $("live-subtitles").hidden = true; subtitleCues = { primary: [], secondary: [] }; loadedSubtitleUrls = { primary: "", secondary: "" }; $("subtitle-review").hidden = true; $("subtitle-editor-panel").hidden = true; subtitleDirty = false; updateSubtitleButtons(); $("primary-srt-link").hidden = true; $("secondary-srt-link").hidden = true; $("bilingual-srt-link").hidden = true; $("bilingual-vtt-link").hidden = true; $("primary-audio-preview").removeAttribute("src"); $("secondary-audio-preview").removeAttribute("src"); $("primary-audio-preview").load(); $("secondary-audio-preview").load(); }  if (data.video) { $("video-review").hidden = false; for (const [id, path] of [["primary-video-link", "outputs/presentation-primary.mp4"], ["secondary-video-link", "outputs/presentation-secondary.mp4"], ["dual-video-link", "outputs/presentation-dual.mp4"]]) { const link = $(id); link.hidden = false; const url = fileUrl(path); if (link.href !== new URL(url, location.href).href) link.href = url; } const dualPath = dualAudioTrack === "primary" ? "outputs/presentation-primary.mp4" : dualAudioTrack === "secondary" ? "outputs/presentation-secondary.mp4" : "outputs/presentation-dual.mp4"; const dualSubtitle = dualAudioTrack === "primary" ? "outputs/presentation-primary.vtt" : dualAudioTrack === "secondary" ? "outputs/presentation-secondary.vtt" : "outputs/presentation-bilingual.vtt"; for (const [id, path, subtitle] of [["primary-video-preview", "outputs/presentation-primary.mp4", "outputs/presentation-primary.vtt"], ["secondary-video-preview", "outputs/presentation-secondary.mp4", "outputs/presentation-secondary.vtt"], ["dual-video-preview", dualPath, dualSubtitle]]) { const video = $(id); const videoUrl = fileUrl(path); if (video.src !== new URL(videoUrl, location.href).href) video.src = videoUrl; const track = video.querySelector("track"); const subtitleUrl = fileUrl(subtitle); if (track.src !== new URL(subtitleUrl, location.href).href) track.src = subtitleUrl; } } else if (!$('video-review').hidden) { $("video-review").hidden = true; for (const id of ["primary-video-link", "secondary-video-link", "dual-video-link"]) $(id) .hidden = true; for (const id of ["primary-video-preview", "secondary-video-preview", "dual-video-preview"]) { const video = $(id); video.removeAttribute("src"); video.load(); } } $("build-ppt").disabled = data.presentation_source_required || (!data.draft || !approvals.draft) || (data.vision_enabled && data.vision_input_count && !approvals.vision); $("build-audio").disabled = !!data.audio_build_running || !data.presentation || !speechReady; $("build-video").disabled = !!data.build_running || !data.audio || !data.subtitles; }
+function selectDualAudioTrack() { const select = $("dual-audio-track"); const video = $("dual-video-preview"); dualAudioTrack = select.value; const currentTime = video.currentTime || 0; const wasPlaying = !video.paused; if (stageInfo) updateStageControls(stageInfo); video.addEventListener("loadedmetadata", () => { video.currentTime = Math.min(currentTime, video.duration || currentTime); if (wasPlaying) video.play().catch(() => {}); }, { once: true }); }
+function parseVtt(text) { return text.split(/\r?\n\r?\n/).map(block => { const lines = block.trim().split(/\r?\n/); const timeIndex = lines.findIndex(line => line.includes(" --> ")); if (timeIndex < 0) return null; const times = lines[timeIndex].split(" --> "); const parse = value => { const parts = value.trim().replace(",", ".").split(":").map(Number); return parts.length === 3 ? parts[0] * 3600 + parts[1] * 60 + parts[2] : parts[0] * 60 + parts[1]; }; return { start: parse(times[0]), end: parse(times[1]), text: lines.slice(timeIndex + 1).join(" ") }; }).filter(Boolean); }
+function updateSubtitleButtons() { const hasSubtitles = !!stageInfo?.subtitles; $("load-subtitle").disabled = !hasSubtitles; $("save-subtitle").disabled = !subtitleDirty; $("save-subtitle").textContent = subtitleDirty ? "Save subtitle edits" : "Subtitles saved"; }
+async function loadSubtitleEditor() { try { const track = $("subtitle-track-editor").value; const data = await get("/api/subtitles?project=" + encodeURIComponent(project()) + "&track=" + encodeURIComponent(track)); $("subtitle-editor").value = data.content || ""; subtitleDirty = false; updateSubtitleButtons(); $("subtitle-editor-state").textContent = `Loaded ${track} subtitles. Edit cues and save when ready.`; subtitleEditorLoaded = true; } catch(e) { $("subtitle-editor-state").textContent = `Subtitle loading failed: ${e.message}`; show(e.message); } }
+async function saveSubtitleEditor() { try { const track = $("subtitle-track-editor").value; const content = $("subtitle-editor").value; const result = await post("/api/subtitles", { project: project(), track, content }); subtitleDirty = false; updateSubtitleButtons(); $("subtitle-editor-state").textContent = `Saved ${result.cues} cues. Audio is unchanged; subtitles are automatically accepted for the next video build.`; subtitleEditorLoaded = false; await refreshStages(); } catch(e) { $("subtitle-editor-state").textContent = `Subtitle save failed: ${e.message}`; show(e.message); } }
+async function loadLiveSubtitles() { const urls = { primary: fileUrl("outputs/presentation-primary.vtt"), secondary: fileUrl("outputs/presentation-secondary.vtt") }; for (const kind of ["primary", "secondary"]) { if (loadedSubtitleUrls[kind] === urls[kind]) continue; const response = await fetch(urls[kind]); if (response.ok) { subtitleCues[kind] = parseVtt(await response.text()); loadedSubtitleUrls[kind] = urls[kind]; } } }
+function updateLiveSubtitle(kind) { const audio = $(kind === "primary" ? "primary-audio-preview" : "secondary-audio-preview"); const cue = subtitleCues[kind].find(item => audio.currentTime >= item.start && audio.currentTime <= item.end); $(kind === "primary" ? "primary-live-subtitle" : "secondary-live-subtitle").textContent = cue ? cue.text : "—"; }
+async function refreshStages() { try { const data = await get("/api/stages?project=" + encodeURIComponent(project())); updateStageControls(data); if (data.draft && !draftLoaded && !draftDirty) await loadDraft(false); if (data.vision && !visionReportLoaded) await loadVisionReport(); if (data.subtitles || data.audio) { await loadLiveSubtitles(); $("live-subtitles").hidden = false; if (!subtitleEditorLoaded) await loadSubtitleEditor(); } if (!data.vision) { visionReportLoaded = false; $("vision-review").hidden = true; } } catch(e) { show(e.message); } }
+function visionValue(item, key) { const value = item[key]; return Array.isArray(value) ? value.join("\\n") : (value ?? ""); }
+async function loadVisionReport() { const data = await get("/api/vision/report?project=" + encodeURIComponent(project())); if (!Array.isArray(data)) return; const panel = $("vision-review"); panel.innerHTML = ""; data.forEach((item, index) => { const card = document.createElement("div"); card.className = "vision-card"; const title = document.createElement("h3"); title.textContent = item.file || `Image ${index + 1}`; card.appendChild(title); if (item.file) { const image = document.createElement("img"); image.src = fileUrl(item.file); image.alt = item.alt_text || item.description || title.textContent; card.appendChild(image); } for (const [key, label, multiline] of [["description", "Description", true], ["visible_text", "Visible text", true], ["key_points", "Key points", true], ["alt_text", "Alt Text", true], ["suggested_slide", "Suggested slide", false], ["confidence", "Confidence", false]]) { const field = document.createElement(multiline ? "textarea" : "input"); field.value = visionValue(item, key); field.placeholder = label; field.dataset.index = index; field.dataset.key = key; field.rows = multiline ? 3 : 1; field.oninput = () => { visionDirty = true; $("save-vision").disabled = false; $("approve-vision").disabled = true; }; const labelNode = document.createElement("label"); labelNode.textContent = label; labelNode.appendChild(field); card.appendChild(labelNode); } panel.appendChild(card); }); panel.hidden = false; visionReportLoaded = true; visionDirty = false; $("save-vision").disabled = true; }
+async function loadDraft(refresh = true) { try { const data = await get("/api/draft?project=" + encodeURIComponent(project())); if (data.status === "missing") throw Error("Draft file does not exist yet."); $("draft").value = JSON.stringify(data, null, 2); draftLoaded = true; setDraftDirty(false); if (refresh) await refreshStages(); } catch(e) { show(e.message); } }
+function renderPiProviderRows(providers) { return providers.map(provider => { const id = escapeHtml(provider.id); const tokenAuth = String(provider.auth || "").includes("token"); const accountAuth = String(provider.auth || "").includes("account"); const authControls = [accountAuth ? `<button class="secondary" onclick="loginPiInternal('${id}')">Login</button>` : "", tokenAuth ? `<span class="pi-token-controls"><input id="pi-token-${id}" type="password" placeholder="Token"><label><input id="pi-remember-${id}" type="checkbox" checked> Rem</label><button class="secondary" onclick="savePiInternalToken('${id}')">Save</button></span>` : ""].filter(Boolean).join(""); const status = provider.configured ? (String(provider.source || "").includes("extension public") ? "available (extension public)" : `authenticated (${escapeHtml(provider.source || "Pi")})`) : (provider.installed === false ? "extension not installed" : (accountAuth ? "login required." : "token required.")); const selected = configuredLlmProvider === provider.id ? " checked" : ""; return `<div class="provider-row" data-provider="${id}"><input type="radio" name="provider-choice" value="${id}"${selected} onchange="providerChanged('${id}')"><span class="provider-name">${escapeHtml(provider.name || provider.id)}</span><span id="quota-${id}" class="quota-summary">—</span><span class="status" id="${id}-state">${status}</span><span id="${id}-auth-control" class="${accountAuth && tokenAuth ? "pi-auth-both" : ""}">${authControls || "Pi authentication"}</span><select id="model-${id}" onchange="selectProviderModel('${id}')" disabled><option>Authenticate first</option></select><span class="provider-actions"><button class="secondary" onclick="showModelCatalog('${id}')">Details</button><button id="usage-${id}" class="secondary" onclick="refreshProviderUsage('${id}')">Usage</button><button class="secondary" onclick="testSelectedProviderModel('${id}')">Test</button><span id="usage-summary-${id}" class="usage-summary"></span><span id="model-test-summary-${id}" class="model-test-summary">Not tested</span></span></div>`; }).join(""); }
+async function refreshPiInternalProviders() { try { const data = await get("/api/pi/internal-providers"); const internalBody = $("pi-internal-provider-body"); const extensionBody = $("pi-extension-provider-body"); const canonical = $("llm-provider"); if (!internalBody || !extensionBody || !canonical) return; const providers = data.providers || []; const extensionProviders = data.extension_providers || []; internalPiProviderIds = new Set(providers.map(provider => provider.id)); piExtensionProviderIds = new Set(extensionProviders.map(provider => provider.id)); for (const provider of [...providers, ...extensionProviders]) { if (!Array.from(canonical.options).some(option => option.value === provider.id)) { const option = document.createElement("option"); option.value = provider.id; option.textContent = provider.name || provider.id; canonical.appendChild(option); } } internalBody.innerHTML = renderPiProviderRows(providers); extensionBody.innerHTML = renderPiProviderRows(extensionProviders); const selectedRadio = document.querySelector(`input[name="provider-choice"][value="${configuredLlmProvider}"]`); if (selectedRadio) selectedRadio.checked = true; } catch (_) { /* The internal inventory is diagnostic and must not block the workflow UI. */ } }
+function togglePiProviderGroup(kind) { const suffix = kind === "extension" ? "extension" : "internal"; const header = $(`pi-${suffix}-provider-header`); const body = $(`pi-${suffix}-provider-body`); const button = $(`pi-${suffix}-group-toggle`); if (!header || !body || !button) return; const expanded = body.hidden; header.hidden = !expanded; body.hidden = !expanded; button.setAttribute("aria-expanded", String(expanded)); const icon = button.querySelector(".expand-icon"); if (icon) icon.textContent = expanded ? "▾" : "▸"; }
+function togglePiInternalProviders() { const table = $("pi-internal-provider-grid"); const button = $("pi-internal-toggle"); if (!table || !button) return; const expanded = table.hidden; table.hidden = !expanded; table.setAttribute("aria-hidden", String(!expanded)); button.setAttribute("aria-expanded", String(expanded)); const icon = button.querySelector(".expand-icon"); if (icon) icon.textContent = expanded ? "▾" : "▸"; if (expanded) refreshPiInternalProviders(); }
+function isPiInternalProvider(provider) { return internalPiProviderIds.has(provider) || piExtensionProviderIds.has(provider); }
+function setPiControls(data) { const running = !!data.running; const authenticated = !!data.codemie_authenticated; const piEl = $("pi-state"); piEl.classList.remove("pi-running", "pi-starting"); if (running) { piEl.classList.add("pi-running"); piEl.title = "Pi running"; piEl.setAttribute("aria-label", "Pi running"); } else { piEl.title = project() ? "Pi stopped" : "Select a product resource directory"; piEl.setAttribute("aria-label", project() ? "Pi stopped" : "Pi not started"); } $("codemie-state").textContent = authenticated ? "authenticated." : "login required."; $("codemie-cli-state").textContent = authenticated ? "authenticated." : "same SSO"; $("codemie-login-logout").textContent = authenticated ? "Logout CodeMie" : "Login CodeMie SSO"; $("codemie-login-logout").onclick = authenticated ? logoutCodeMie : loginCodeMie; }
+async function startPi() { try { const _pi = $("pi-state"); _pi.classList.remove("pi-running"); _pi.classList.add("pi-starting"); _pi.title = "Pi starting…"; const data = await post("/api/pi/start", { project: project() }); setPiControls(data); await loadLlmModels(); } catch(e) { const _piErr = $("pi-state"); _piErr.classList.remove("pi-running", "pi-starting"); _piErr.title = `Pi failed: ${e.message}`; $("project-path-state").textContent = `Pi failed to start: ${e.message}`; $("project-path-state").style.color = tc("red"); show(e.message); } }
+async function stopPi() { try { await post("/api/pi/stop", {}); setPiControls({ running: false, codemie_authenticated: false }); modelActivated = false; $("llm-model").disabled = true; $("generate-draft").disabled = true; } catch(e) { show(e.message); } }
+let codeMieAuthBusy = false;
+async function loginCodeMie() { if (codeMieAuthBusy) return; const button = $("codemie-login-logout"); codeMieAuthBusy = true; button.disabled = true; try { $("codemie-state").textContent = "Opening CodeMie SSO in your browser..."; const loginResult = await post("/api/pi/login", { project: project() }); if (loginResult.codemie_authenticated) { setPiControls(loginResult); await loadLlmModels(); refreshPiInternalProviders(); return; } const poll = async (attempt = 0) => { const data = await get("/api/pi/status"); setPiControls(data); if (data.codemie_authenticated) { await loadLlmModels(); refreshPiInternalProviders(); return; } if (attempt < 60) { $("codemie-state").textContent = `Waiting for CodeMie SSO... ${attempt + 1}/60`; setTimeout(() => poll(attempt + 1), 2000); } else $("codemie-state").textContent = "CodeMie SSO completed in the browser, but the local credential was not detected. Close the browser login tab and try again."; }; await poll(); } catch(e) { $("codemie-state").textContent = `CodeMie login failed: ${e.message}`; show(e.message); } finally { codeMieAuthBusy = false; button.disabled = false; } }
+async function loginPiInternal(provider) { const state = $(`${provider}-state`); if (state) state.textContent = "Opening Pi login..."; try { await post("/api/pi/internal-login", { project: project(), provider }); await refreshPiInternalProviders(); if (isPiInternalProvider(provider)) { $("llm-provider").value = provider; await providerChanged(provider); } } catch(e) { if (state) state.textContent = `Login failed: ${e.message}`; show(e.message); } }
+async function savePiInternalToken(provider) { const token = $(`pi-token-${provider}`)?.value.trim(); const remember = $(`pi-remember-${provider}`)?.checked ?? true; if (!token) { $(`${provider}-state`).textContent = "Enter a token first."; return; } try { await post("/api/pi/token", { project: project(), provider, token, remember }); $(`${provider}-state`).textContent = remember ? "Token saved." : "Token saved for this session."; await refreshPiInternalProviders(); $("llm-provider").value = provider; await providerChanged(provider); } catch(e) { $(`${provider}-state`).textContent = `Token save failed: ${e.message}`; show(e.message); } }
+async function logoutCodeMie() { if (codeMieAuthBusy) return; const button = $("codemie-login-logout"); codeMieAuthBusy = true; button.disabled = true; try { await post("/api/pi/logout", { project: project() }); setPiControls({ running: true, codemie_authenticated: false }); modelActivated = false; $("llm-model").disabled = true; $("generate-draft").disabled = true; refreshPiInternalProviders(); } catch(e) { $("codemie-state").textContent = `CodeMie logout failed: ${e.message}`; show(e.message); } finally { codeMieAuthBusy = false; button.disabled = false; } }
+function modelSupportsVision(model) { const inputs = Array.isArray(model?.input) ? model.input.map(value => String(value).toLowerCase()) : []; return inputs.includes("image") || inputs.includes("vision") || model?.capabilities?.vision === true; }
+function updateVisionOption() { if (modelActivated && $("llm-model").value !== configuredLlmModel) { modelActivated = false; $("generate-draft").disabled = true; } const model = llmModels.find(item => item.id === $("llm-model").value); selectedVisionCapable = modelSupportsVision(model); $("vision-option").hidden = !selectedVisionCapable; if (!selectedVisionCapable) $("vision-state").textContent = "Select a Vision-capable CodeMie model to enable image analysis."; if (stageInfo) updateStageControls(stageInfo); }
+function modelTestKey(provider, modelId) { return `${provider}\\u0000${modelId}`; }
+function modelTestResult(provider, modelId) { return modelTestResults.get(modelTestKey(provider, modelId)); }
+function modelTestOptionText(model, result) { const state = result ? (result.ok ? "✓" : "✗") : "?"; return `[${state}] ${model.name || model.id}${(model.input || []).includes("image") ? " (Vision)" : ""}`; }
+function updateModelTestSummary(provider, models = llmModels) { const summary = $(`model-test-summary-${provider}`); if (!summary) return; const results = models.map(model => modelTestResult(provider, model.id)).filter(Boolean); const passed = results.filter(result => result.ok).length; const failed = results.length - passed; summary.className = `model-test-summary ${failed ? "fail" : passed ? "pass" : ""}`; summary.textContent = results.length ? `${results.length} tested, ${passed} passed${failed ? `, ${failed} failed` : ""}` : "Not tested"; }
+function updateModelTestOption(provider, modelId) { const select = $(`model-${provider}`); const model = llmModels.find(item => item.id === modelId); if (!select || !model) return; const option = Array.from(select.options).find(item => item.value === modelId); if (option) option.textContent = modelTestOptionText(model, modelTestResult(provider, modelId)); updateModelTestSummary(provider); }
+async function runModelTest(provider, modelId, silent = true) { const key = modelTestKey(provider, modelId); const existing = modelTestResult(provider, modelId); if (existing) return existing; if (modelTestInFlight.has(key)) return modelTestInFlight.get(key); const task = (async () => { const summary = $(`model-test-summary-${provider}`); if (summary) { summary.className = "model-test-summary"; summary.textContent = "Testing..."; } try { const result = await post("/api/pi/model-test", { project: project(), provider, model_id: modelId }); modelTestResults.set(key, result); updateModelTestOption(provider, modelId); return result; } catch (error) { const result = { provider, model_id: modelId, ok: false, error: error.message }; modelTestResults.set(key, result); updateModelTestOption(provider, modelId); if (!silent) show(error.message); return result; } finally { modelTestInFlight.delete(key); } })(); modelTestInFlight.set(key, task); return task; }
+async function testSelectedProviderModel(provider) { const model = $(`model-${provider}`)?.value; if (!model) { show("Select a model before testing."); return; } const result = await runModelTest(provider, model, false); $("llm-model-state").textContent = result.ok ? `${provider} / ${model} passed the quick test.` : `${provider} / ${model} failed the quick test.`; }
+async function showModelCatalog(provider = $("llm-provider").value) { try { const currentProvider = provider; const currentModel = $("model-" + provider).value; const data = await get("/api/pi/model-catalog?project=" + encodeURIComponent(project()) + "&provider=" + encodeURIComponent(currentProvider)); const panel = $("model-catalog"); const providerNames = { codemie: "CodeMie Web / Platform", "codemie-cli": "CodeMie CLI", dial: "DIAL", elitea: "ELITEA" }; panel.innerHTML = `<button id="close-model-catalog">Close</button><h3>Live ${providerNames[currentProvider] || currentProvider} model catalog</h3>`; $("close-model-catalog").onclick = () => { panel.hidden = true; }; const table = document.createElement("table"); table.innerHTML = "<thead><tr><th>Provider</th><th>Model</th><th>Input</th><th>Capabilities</th><th>Context</th><th>Max output</th><th>Input price</th><th>Output price</th></tr></thead>"; const body = document.createElement("tbody"); for (const model of data.models || []) { const row = document.createElement("tr"); if (model.provider === currentProvider && model.id === currentModel) row.className = "current"; const caps = Object.entries(model.capabilities || {}).filter(([, value]) => value).map(([key]) => key).join(", "); const cells = [model.provider, model.name || model.id, (model.input || []).join(", "), caps || (model.reasoning ? "reasoning" : ""), model.context_window || "", model.max_tokens || "", model.cost?.input ?? "", model.cost?.output ?? ""]; cells.forEach(value => { const cell = document.createElement("td"); cell.textContent = String(value); row.appendChild(cell); }); body.appendChild(row); } table.appendChild(body); panel.appendChild(table); panel.hidden = false; } catch(e) { show(e.message); } }
+function escapeHtml(value) { return String(value).replace(/[&<>\"']/g, character => ({"&":"&amp;","<":"&lt;",">":"&gt;","\"":"&quot;","'":"&#39;"}[character])); }
+function renderUsage(text) { const container = $("provider-usage"); container.innerHTML = ""; const blocks = text.split(/\r?\n\s*\r?\n/).map(block => block.trim()).filter(Boolean); for (const block of blocks) { const lines = block.split(/\r?\n/).map(line => line.trim()).filter(Boolean); const markdownLines = lines.filter(line => line.startsWith("|") && line.endsWith("|")); let rows = []; if (markdownLines.length >= 2) { rows = markdownLines.filter(line => !/^\|?\s*:?-{2,}/.test(line.replace(/\|/g, ""))).map(line => line.split("|").slice(1, -1).map(cell => cell.trim())); } else { rows = lines.map(line => line.split(/\s{2,}|\t/).map(cell => cell.trim()).filter(Boolean)).filter(row => row.length >= 2); } if (rows.length >= 2) { const section = document.createElement("section"); const head = rows.shift() || ["Metric", "Value"]; section.innerHTML = `<table><thead><tr>${head.map(cell => `<th>${escapeHtml(cell)}</th>`).join("")}</tr></thead><tbody>${rows.map(row => `<tr>${row.map(cell => `<td>${escapeHtml(cell)}</td>`).join("")}</tr>`).join("")}</tbody></table>`; container.appendChild(section); } } if (!container.children.length) container.textContent = "No tabular usage data returned."; }
+function usageMetric(text, label, pattern = /\$\s*[\d,]+(?:\.\d+)?/) { const line = text.split(/\r?\n/).find(item => new RegExp(`\\b${label}\\b`, "i").test(item)); const value = line && line.match(pattern); return value ? value[0].replace(/\s+/g, "") : ""; }
+function formatCurrency(value) { const number = Number(String(value || "").replace(/[$,]/g, "")); return Number.isFinite(number) ? `$${number.toFixed(2)}` : ""; }
+function quotaSummary(spend, limit) { const spendValue = Number(String(spend || "").replace(/[$,]/g, "")); const limitValue = Number(String(limit || "").replace(/[$,]/g, "")); if (!Number.isFinite(spendValue) || !Number.isFinite(limitValue)) return "No summary"; return `${formatCurrency(spendValue)} / ${formatCurrency(limitValue)}`; }
+function providerUsageSummary(provider, usageText) { if (provider === "elitea") { const spend = usageMetric(usageText, "Spend"); const limit = usageMetric(usageText, "Limit"); return quotaSummary(spend, limit); } const usageLines = usageText.split(/\r?\n/).filter(line => line.includes("|") && line.includes("$") && !/^\s*\|?\s*Project/i.test(line)); const channelLine = provider === "codemie-cli" ? usageLines.find(line => /\(cli\)/i.test(line)) : provider === "codemie" ? usageLines.find(line => !/\(cli\)/i.test(line)) : provider === "dial" ? usageLines.find(line => /monthCostStats/i.test(line)) || usageLines[0] : usageLines[0]; const amounts = (channelLine || "").match(/\$\s*[\d,]+(?:\.\d+)?/g) || []; return amounts.length >= 2 ? quotaSummary(amounts[0], amounts[1]) : "No summary"; }
+async function refreshAllProviderUsage() { for (const provider of ["codemie", "codemie-cli", "dial", "elitea"]) await refreshProviderUsage(provider, false); }
+async function refreshProviderUsage(provider = $("llm-provider").value, openPanel = true) { if (openPanel) $("provider-usage-panel").hidden = false; const summary = $("quota-" + provider); if (summary) summary.textContent = "Loading..."; try { const data = await post("/api/pi/usage", { project: project(), provider }); const messages = (data.usage || []).map(item => item.message || "").filter(Boolean); const usageText = messages.join("\n\n"); renderUsage(usageText); if (summary) summary.textContent = data.supported === false ? "Not exposed" : providerUsageSummary(provider, usageText); if (data.message && data.supported === false) $("provider-usage").textContent = data.message; } catch(e) { if (summary) summary.textContent = "Unavailable"; $("provider-usage").textContent = `Usage unavailable: ${e.message}`; } }
+async function providerChanged(selectedProvider = $("llm-provider").value) { const provider = selectedProvider; $("llm-provider").value = provider; configuredLlmProvider = provider; configuredLlmModel = ""; providerTokenValid = provider === "codemie" || provider === "codemie-cli"; document.querySelectorAll(".provider-row").forEach(row => row.classList.toggle("selected", row.dataset.provider === provider)); $("llm-model").innerHTML = "<option value=\"\"></option>"; $("llm-model").disabled = !providerTokenValid; $("generate-draft").disabled = true; if (providerTokenValid) { await loadLlmModels(); return; } const status = await get("/api/pi/token-status?provider=" + encodeURIComponent(provider)); if (status.stored) { providerTokenValid = true; $(`${provider}-state`).textContent = isPiInternalProvider(provider) ? `authenticated (${status.source || "Pi auth"})` : "Token saved."; $("llm-model-state").textContent = isPiInternalProvider(provider) ? `${provider} credential found. Loading models...` : `${provider.toUpperCase()} token found in secure storage. Loading models...`; await loadLlmModels(); } else { $(`${provider}-state`).textContent = isPiInternalProvider(provider) ? "Login or token required" : "Token required"; $("llm-model-state").textContent = `Enter a valid ${provider.toUpperCase()} token or use Login.`; } }
+async function refreshStoredProviderTokenStates() { await Promise.all(["dial", "elitea"].map(async provider => { try { const status = await get("/api/pi/token-status?provider=" + encodeURIComponent(provider)); $(`${provider}-state`).textContent = status.stored ? "Token saved." : "Token required"; } catch (_) { /* The default status remains visible if the server is unavailable. */ } })); }
+async function validateProviderToken(provider) { try { const token = $(provider === "dial" ? "dial-token" : "elitea-token").value.trim(); if (!token) { $("llm-model-state").textContent = "Enter a token first."; return; } const result = await post("/api/pi/token", { project: project(), provider, token, remember: $(provider === "dial" ? "remember-dial" : "remember-elitea").checked }); providerTokenValid = true; $(`${provider}-state`).textContent = "Token valid."; $("llm-model-state").textContent = `${provider.toUpperCase()} token validated. Loading models...`; await loadLlmModels(); refreshPiInternalProviders(); show(result); } catch(e) { providerTokenValid = false; $(`${provider}-state`).textContent = "Token invalid or expired."; $("llm-model-state").textContent = `Token validation failed: ${e.message}`; show(e.message); } }
+async function loadLlmModels() { const provider = $("llm-provider").value; if (!providerTokenValid) return; const data = await get("/api/pi/models?project=" + encodeURIComponent(project()) + "&provider=" + encodeURIComponent(provider)); llmModels = data.models || []; configuredLlmModel = configuredLlmProvider === provider ? configuredLlmModel : ""; const select = $("model-" + provider); const canonical = $("llm-model"); select.innerHTML = "<option value=\"\">Select a model...</option>"; canonical.innerHTML = "<option value=\"\"></option>"; for (const model of llmModels) { const option = document.createElement("option"); option.value = model.id; option.textContent = modelTestOptionText(model, modelTestResult(provider, model.id)); select.appendChild(option); const canonicalOption = option.cloneNode(true); canonical.appendChild(canonicalOption); } const enabled = llmModels.length > 0; $("llm-model-state").textContent = enabled ? "Select a model to continue." : "No models available yet."; const savedModelName = configuredLlmModel; const savedModelAvailable = savedModelName && llmModels.some(item => item.id === savedModelName); if (savedModelAvailable) { $("llm-model-state").textContent = `Restoring ${provider} model: ${savedModelName}...`; } else if (savedModelName && llmModels.length > 0) { $("llm-model-state").textContent = `Saved model ${savedModelName} is no longer available from ${provider}. Select a replacement model.`; configuredLlmModel = ""; localStorage.removeItem("ai-video:last-llm-model"); } if (savedModelAvailable) { select.value = configuredLlmModel; canonical.value = configuredLlmModel; } modelActivated = false; select.disabled = !enabled; $("generate-draft").disabled = true; updateVisionOption(); setPiControls(data.status); if (savedModelAvailable) selectLlmModel(false); refreshProviderUsage(provider, false); }
+function selectProviderModel(provider, persist = true) { $("llm-provider").value = provider; $("llm-model").value = $("model-" + provider).value; selectLlmModel(persist); }
+async function selectLlmModel(persist = true) { try { const model = $("llm-model").value; if (!model) { $("llm-model-state").textContent = "Select a model first."; return; } const provider = $("llm-provider").value; const providerNames = { codemie: "CodeMie Web / Platform", "codemie-cli": "CodeMie CLI", dial: "DIAL", elitea: "ELITEA" }; const test = await runModelTest(provider, model, false); if (!test.ok) { modelActivated = false; $("generate-draft").disabled = true; $("llm-model-state").textContent = `Quick test failed for ${provider}/${model}; choose another model or inspect the error.`; return; } await post("/api/pi/model", { project: project(), provider, model_id: model }); configuredLlmProvider = provider; configuredLlmModel = model; localStorage.setItem("ai-video:last-llm-provider", provider); localStorage.setItem("ai-video:last-llm-model", model); modelActivated = true; $("generate-draft").disabled = false; updateVisionOption(); if (persist) markConfigDirty(); $("llm-model-state").textContent = `Selected ${providerNames[provider] || provider} model: ${model}. Quick test passed; save configuration to persist it.`; } catch(e) { show(e.message); } }
+async function generateDraft() { const button = $("generate-draft"); if (activeOperation?.button_id === "generate-draft") { await cancelCurrentOperation(); return; } try { const model = $("llm-model").value; const draftInstructions = $("draft-instructions").value.trim(); setActiveOperation({ kind: "pi", project: project(), button_id: "generate-draft", busy_label: "Generating draft..." }); button.disabled = true; button.textContent = "Generating draft..."; $("draft-state").textContent = `Generating draft with ${model}...`; const data = await post("/api/pi/draft", { project: project(), provider: $("llm-provider").value, model_id: model, draft_instructions: draftInstructions }); $("draft-state").textContent = "Draft generated. Load it below for review."; $("draft-instructions-state").textContent = draftInstructions ? "Custom prompt applied to this draft generation." : "No additional draft instructions were provided."; await loadDraft(); show(data); } catch(e) { $("draft-state").textContent = /cancel/i.test(e.message) ? "Draft generation cancelled." : `Draft generation failed: ${e.message}`; show(e.message); } finally { setActiveOperation(null); button.disabled = false; button.textContent = "Generate LLM draft"; } }
+async function saveDraft() { const button = $("save-draft"); try { button.disabled = true; button.textContent = "Saving draft..."; const draft = JSON.parse($("draft").value); await post("/api/draft", { project: project(), draft }); setDraftDirty(false); $("draft-edit-state").textContent = "Draft saved. Review it before approving."; button.textContent = "Draft saved"; await refreshStages(); show({ saved: true }); } catch(e) { button.disabled = false; button.textContent = "Save draft"; $("draft-edit-state").textContent = `Draft save failed: ${e.message}`; show(e.message); } }
+async function analyzeImages() { const button = $("analyze-images"); if (activeOperation?.button_id === "analyze-images") { await cancelCurrentOperation(); return; } try { setActiveOperation({ kind: "pi", project: project(), button_id: "analyze-images", busy_label: "Running Vision analysis..." }); button.disabled = true; button.textContent = "Running Vision analysis..."; $("vision-state").textContent = "Vision analysis in progress..."; show(await post("/api/vision", { project: project() })); visionReportLoaded = false; await loadVisionReport(); await refreshStages(); } catch(e) { $("vision-state").textContent = /cancel/i.test(e.message) ? "Vision analysis cancelled." : `Vision analysis failed: ${e.message}`; show(e.message); } finally { setActiveOperation(null); button.disabled = false; button.textContent = "Vision analysis"; } }
+async function saveVisionReport() { try { const report = [...document.querySelectorAll(".vision-card")].map(card => { const item = {}; card.querySelectorAll("[data-key]").forEach(field => { const key = field.dataset.key; item[key] = key === "key_points" ? field.value.split(/\\r?\\n/).map(value => value.trim()).filter(Boolean) : (key === "suggested_slide" || key === "confidence") && field.value !== "" ? Number(field.value) : field.value; }); const image = card.querySelector("img"); if (image) item.file = image.src.includes("path=") ? decodeURIComponent(image.src.split("path=")[1].split("&")[0]) : item.file; return item; }); await post("/api/vision/report", { project: project(), report }); visionDirty = false; visionReportLoaded = false; $("vision-state").textContent = "Vision analysis saved. Review it before approving."; await refreshStages(); } catch(e) { show(e.message); } }
+async function regenerateStage(stage) { try { const cleared = await post("/api/regenerate", { project: project(), stage }); const buildPath = { presentation: "/api/build-ppt", audio: "/api/build-audio", video: "/api/build" }[stage]; const job = buildPath ? await post(buildPath, { project: project() }) : null; if (job && activeOperation) { activeOperation.job_id = job.id; setActiveOperation(activeOperation); } show({ regeneration: cleared, build: job }); await refreshStages(); } catch(e) { clearActiveOperation(); show(e.message); } }
+async function approve(stage) { try { if (stage === "draft" && draftDirty) { const message = "Draft has unsaved changes. Click Save draft before approving."; $("draft-edit-state").textContent = message; show(message); return; } if (stage === "draft" && stageInfo?.duration_estimate_warning) { const estimate = stageInfo.estimated_duration_seconds; const target = stageInfo.target_duration_seconds; const msg = `Estimated narration is ~${estimate}s, which is below the ${target}s target. The build will proceed but the final video may be shorter than expected.`; const ok = await showConfirmDialog("Duration estimate warning", msg); if (!ok) return; } if (stage === "vision" && visionDirty) { const message = "Vision analysis has unsaved changes. Click Save Vision analysis before approving."; $("vision-state").textContent = message; show(message); return; } show(await post("/api/approve", { project: project(), stage })); await refreshStages(); } catch(e) { show(e.message); } }
+async function openOutputFolder() { try { show(await post("/api/open-output", { project: project() })); } catch(e) { show(e.message); } }
+async function buildOrRegenerate(stage) { const buttons = { presentation: $("build-ppt"), audio: $("build-audio"), video: $("build-video") }; const button = buttons[stage]; const labels = { presentation: "Building PPT...", audio: "Building audio + subtitles...", video: "Building video..." }; if (stage === "presentation" && presentationInstructionsDirty) { $("presentation-instructions-state").textContent = "PPT prompt has unsaved changes. Click Save PPT prompt before building."; $("presentation-instructions").focus(); return; } if (activeOperation?.stage === stage) { await cancelCurrentOperation(); return; } if (button) { setActiveOperation({ kind: "job", project: project(), stage, button_id: button.id, busy_label: labels[stage] }); } try { if (stageInfo && ((stage === "presentation" && stageInfo.pdf) || (stage === "audio" && stageInfo.audio) || (stage === "video" && stageInfo.video))) { await regenerateStage(stage); return; } if (stage === "audio" && stageInfo?.presentation && !stageInfo?.approvals?.presentation) { await post("/api/approve", { project: project(), stage: "presentation" }); const refreshed = await get("/api/stages?project=" + encodeURIComponent(project())); updateStageControls(refreshed); if (!refreshed.approvals?.presentation) throw Error("PPT approval could not be saved; audio build was not started."); } const path = { presentation: "/api/build-ppt", audio: "/api/build-audio", video: "/api/build" }[stage]; const job = await post(path, { project: project() }); if (activeOperation) activeOperation.job_id = job.id; setActiveOperation(activeOperation); show({ message: `${stage} build started. Progress details and Activity log will update.`, job }); await refreshStatus(true); } catch(e) { show(e.message); if (button && stageInfo) updateStageControls(stageInfo); } }
+async function refreshStatus(force = false) { try { const state = await get("/api/status?project=" + encodeURIComponent(project())); const stateLabel = state.error ? `${state.stage || "unknown"} / ${state.status || "unknown"}: ${state.error}` : `${state.stage || "unknown"} / ${state.status || "unknown"}`; $("status").textContent = stateLabel; updateWorkflow(state); show(state); if (activeOperation?.kind === "job" && ["completed", "failed", "cancelled"].includes(state.status)) clearActiveOperation(); const statusKey = `${state.stage || ""}/${state.status || ""}`; if (force || statusKey !== lastStatusKey) { lastStatusKey = statusKey; await refreshStages(); } } catch(e) { show(e.message); } }
+try { const websocketPort = Number(location.port || "8875") + 1; const ws = new WebSocket(`ws://${location.hostname}:${websocketPort}`); ws.onmessage = event => { const data = JSON.parse(event.data); logActivity(`WebSocket ${data.type || "event"}: ${redactSensitive(JSON.stringify(data)).slice(0, 500)}`); if (data.state) { $("status").textContent = `${data.state.stage} / ${data.state.status}`; show(data.state); } }; } catch (_) { /* polling remains available */ }
+$("primary-audio-preview").addEventListener("timeupdate", () => updateLiveSubtitle("primary"));
+$("secondary-audio-preview").addEventListener("timeupdate", () => updateLiveSubtitle("secondary"));
+["primary_language", "secondary_language", "primary_voice", "secondary_voice", "target_duration_seconds", "subscription", "speech_resource", "vision_enabled"].forEach(id => $(id).addEventListener("change", markConfigDirty));
+$("target_duration_seconds").addEventListener("input", markConfigDirty);
+$("draft").addEventListener("input", () => setDraftDirty(true));
+document.body.classList.add("workflow-open");
+if (project()) refreshStages();
+refreshStoredProviderTokenStates();
+refreshPiInternalProviders();
+loadWorkspaceRoot().then(async workspace => { activeProjectStorageKey = projectStorageKey(workspace.install_root || workspace.root); IS_WINDOWS_WORKSPACE = workspace.os === "windows"; const lastProject = localStorage.getItem(activeProjectStorageKey); const selectedProject = lastProject || workspace.default_project; if (selectedProject && !project()) { $("project").value = displayPath(selectedProject); await loadSelectedProject(); } }).catch(error => show(`Product resource directory could not be loaded: ${error.message}`));
+setTimeout(() => { if (project() && (configuredLlmProvider === "dial" || configuredLlmProvider === "elitea" || isPiInternalProvider(configuredLlmProvider))) providerChanged(); }, 700);
+if (!localStorage.getItem("ai-video:guide-seen")) setTimeout(startGuide, 900);
+setInterval(refreshStatus, 3000);
+</script>
+</body>
+</html>

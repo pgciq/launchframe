@@ -1,0 +1,7 @@
+{
+  "version": "rolling-release-essentials",
+  "source": "https://www.gyan.dev/ffmpeg/builds/",
+  "packageUrl": "https://www.gyan.dev/ffmpeg/builds/ffmpeg-release-essentials.zip",
+  "sha256Url": "https://www.gyan.dev/ffmpeg/builds/ffmpeg-release-essentials.zip.sha256",
+  "license": "LGPL-2.1-or-later"
+}

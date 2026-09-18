@@ -1,0 +1,35 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256" role="img" aria-label="LaunchFrame">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#0b1220"/>
+      <stop offset="1" stop-color="#142f50"/>
+    </linearGradient>
+    <linearGradient id="screen" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#0878a0"/>
+      <stop offset="1" stop-color="#1865c0"/>
+    </linearGradient>
+  </defs>
+  <rect x="8" y="8" width="240" height="240" rx="48" fill="url(#bg)" stroke="#5ce1e6" stroke-width="6"/>
+  <!-- Product material: document/image source -->
+  <path d="M31 48a10 10 0 0 1 10-10h42l24 24v70a10 10 0 0 1-10 10H41a10 10 0 0 1-10-10z" fill="#f4f7fb"/>
+  <path d="M83 38v20a4 4 0 0 0 4 4h20" fill="#c8d5e6"/>
+  <rect x="44" y="78" width="49" height="29" rx="5" fill="#d0dcea"/>
+  <circle cx="57" cy="88" r="6" fill="#0878a0"/>
+  <path d="m48 101 12-11 9 8 9-9 15 12z" fill="#0a7a5c"/>
+  <path d="M45 119h42M45 129h30" stroke="#4a6070" stroke-width="5" stroke-linecap="round"/>
+  <!-- AI transformation spark -->
+  <path d="m128 39 7 22 22 7-22 7-7 22-7-22-22-7 22-7z" fill="#ffc857"/>
+  <circle cx="128" cy="68" r="7" fill="#fff"/>
+  <path d="m115 103 5 14 14 5-14 5-5 14-5-14-14-5 14-5z" fill="#6fe7b7"/>
+  <!-- Presentation/video output -->
+  <rect x="148" y="38" width="78" height="94" rx="12" fill="url(#screen)" stroke="#6fe7b7" stroke-width="5"/>
+  <rect x="159" y="49" width="56" height="42" rx="5" fill="#0b1220" opacity=".72"/>
+  <path d="m181 57 23 13-23 13z" fill="#f4f7fb"/>
+  <path d="M159 104h56M159 115h38" stroke="#f4f7fb" stroke-width="5" stroke-linecap="round" opacity=".9"/>
+  <!-- Audio waveform + subtitle lines -->
+  <path d="M31 174h8v-12h8v25h8v-35h8v45h8v-27h8v17h8v-13h8" fill="none" stroke="#5ce1e6" stroke-width="6" stroke-linecap="round" stroke-linejoin="round"/>
+  <path d="M101 166h123M101 181h99M101 196h112" stroke="#f4f7fb" stroke-width="6" stroke-linecap="round" opacity=".9"/>
+  <!-- Flow arrows -->
+  <path d="M104 116h23" stroke="#ffc857" stroke-width="5" stroke-linecap="round"/>
+  <path d="m119 108 10 8-10 8" fill="none" stroke="#ffc857" stroke-width="5" stroke-linecap="round" stroke-linejoin="round"/>
+</svg>

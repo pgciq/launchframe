@@ -1,0 +1,3 @@
+MockFlow is a fictional product used for local pipeline testing. It provides a single workflow for inspecting operational environments and presenting findings to engineering teams.
+
+This document intentionally contains repeated information: MockFlow reduces context switching and provides a controlled interface for internal operations. The duplicate statement helps test future LLM summarization and de-duplication.

@@ -1,0 +1,17 @@
+[
+  {
+    "slide": 1,
+    "title": "Mock Product Overview",
+    "text": "Welcome to MockFlow. MockFlow is a fictional internal operations assistant for platform engineers and application developers. It reduces context switching during technical investigation."
+  },
+  {
+    "slide": 2,
+    "title": "Architecture and Security",
+    "text": "MockFlow uses a client-neutral MCP integration layer. Read-only operations are available by default, while mutating operations require explicit approval gates."
+  },
+  {
+    "slide": 3,
+    "title": "Roadmap",
+    "text": "The roadmap includes richer image and document understanding, approval-aware workflow automation, more language choices, and stronger audit reporting."
+  }
+]

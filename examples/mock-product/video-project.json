@@ -1,0 +1,56 @@
+{
+  "name": "mock-product-demo",
+  "version": "0.1.0",
+  "primary_language": "en-US",
+  "secondary_language": "zh-CN",
+  "azure": {
+    "repository": "",
+    "ref": "",
+    "checkout_dir": "vendor/azure-mcp",
+    "subscription_id": null,
+    "speech_resource_id": null
+  },
+  "content_generation": {
+    "provider": "agnes",
+    "model": "agnes-2.5-flash",
+    "base_url": "https://api.openai.com/v1",
+    "require_review": true
+  },
+  "vision_analysis": {
+    "enabled": true,
+    "provider": "openai-compatible",
+    "model": "agnes-2.5-flash",
+    "base_url": "https://api.openai.com/v1",
+    "max_image_bytes": 5000000
+  },
+  "sources": {
+    "auto_scan": true,
+    "content_files": [
+      "content/01-overview.md",
+      "content/02-architecture.md",
+      "content/03-roadmap.md",
+      "documents/product-brief.txt",
+      "documents/technical-notes.yaml"
+    ],
+    "images": [
+      "assets/images/product-dashboard.png",
+      "assets/images/architecture-diagram.png"
+    ],
+    "tables": [
+      "data/metrics.csv"
+    ],
+    "videos": [],
+    "audio": [],
+    "narration_primary": "narration/narration.en.json",
+    "narration_secondary": "narration/narration.zh-CN.json",
+    "subtitles": "subtitles/summary.json"
+  },
+  "voices": {
+    "primary": "en-US-JennyNeural",
+    "secondary": "zh-CN-YunyangNeural"
+  },
+  "output": {
+    "directory": "outputs",
+    "gap_seconds": 0.5
+  }
+}

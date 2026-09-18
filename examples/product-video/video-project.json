@@ -1,0 +1,48 @@
+{
+  "name": "example-product-video",
+  "version": "0.1.0",
+  "primary_language": "en-US",
+  "secondary_language": "zh-CN",
+  "azure": {
+    "repository": "",
+    "ref": "",
+    "checkout_dir": "vendor/azure-mcp",
+    "subscription_id": null,
+    "speech_resource_id": null
+  },
+  "content_generation": {
+    "provider": "codemie-cli",
+    "model": "gpt-5.6-terra-2026-07-09",
+    "require_review": true
+  },
+  "vision_analysis": {
+    "enabled": true,
+    "provider": "codemie",
+    "model": "gpt-5.6-terra-2026-07-09",
+    "max_image_bytes": 5000000
+  },
+  "sources": {
+    "auto_scan": true,
+    "presentation": null,
+    "content_files": [
+      "content/product-overview.md",
+      "content/technical-notes.md",
+      "content/01-launchframe.md",
+      "content/02-resource-to-video-workflow.md",
+      "content/03-provider-and-ai-orchestration.md",
+      "content/04-local-review-and-delivery.md"
+    ],
+    "images": [],
+    "narration_primary": "narration/narration.en.json",
+    "narration_secondary": "narration/narration.zh-CN.json",
+    "subtitles": "subtitles/summary.json"
+  },
+  "voices": {
+    "primary": "en-US-JennyNeural",
+    "secondary": "zh-CN-YunyangNeural"
+  },
+  "output": {
+    "directory": "outputs",
+    "gap_seconds": 0.5
+  }
+}

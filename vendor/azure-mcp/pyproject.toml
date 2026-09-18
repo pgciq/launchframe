@@ -1,0 +1,24 @@
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "azure-mcp"
+version = "0.1.0"
+description = "MCP server for managing Azure Resource Manager resources"
+requires-python = ">=3.10"
+dependencies = [
+    "mcp>=1.2.0,<2.0.0",
+    "azure-identity>=1.19.0",
+    "azure-mgmt-resource>=23.2.0",
+    "azure-mgmt-compute>=34.0.0",
+    "azure-mgmt-sql>=3.0.1",
+    "azure-mgmt-subscription>=3.1.1",
+]
+
+[project.scripts]
+azure-mcp = "server:main"
+
+[tool.setuptools]
+py-modules = ["server"]
+packages = ["providers"]

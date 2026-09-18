@@ -1,0 +1,5 @@
+metric,value,unit,notes
+active_users,128,users,fictional sample data
+mean_diagnosis_time,11.5,minutes,target is below 15 minutes
+successful_tool_calls,96.4,percent,fictional sample data
+supported_integrations,3,count,MCP host examples

@@ -1,0 +1,11 @@
+product: MockFlow
+status: prototype
+architecture:
+  protocol: MCP
+  transport: stdio
+  security:
+    read_only_by_default: true
+    mutation_approval_required: true
+metrics:
+  target_diagnosis_time_minutes: 15
+  supported_hosts: 3
