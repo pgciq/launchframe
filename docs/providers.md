@@ -9,7 +9,7 @@ DIAL
 ELITEA
 ```
 
-CodeMie uses company SSO. The SSO credential is persisted in the current Windows user's Pi auth store and is reused after restarting the Web GUI/Pi while its access or refresh credential remains available. If the refresh credential is invalid or removed, click `Login CodeMie SSO` again. DIAL and ELITEA require Provider tokens; DIAL also requires the company VPN. Tokens can be remembered securely in Windows Credential Manager and are never written to project files.
+CodeMie uses company SSO. The SSO credential is persisted in the current Windows user's Pi auth store and is reused after restarting the Web GUI/Pi while its access or refresh credential remains available. If the refresh credential is invalid or removed, click `Login CodeMie SSO` again. DIAL and ELITEA require Provider tokens; DIAL also requires the provider network access. Tokens can be remembered securely in Windows Credential Manager and are never written to project files.
 
 ## Model selection
 

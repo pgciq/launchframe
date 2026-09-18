@@ -189,9 +189,9 @@ az account set --subscription "<subscription-id>"
 Run the CLI without Pi:
 
 ```powershell
-.\.venv\Scripts\ai-video.exe scan D:\video-projects\my-product
-.\.venv\Scripts\ai-video.exe inspect D:\video-projects\my-product
-.\.venv\Scripts\ai-video.exe build D:\video-projects\my-product
+.\.venv\Scripts\launchframe.exe scan D:\video-projects\my-product
+.\.venv\Scripts\launchframe.exe inspect D:\video-projects\my-product
+.\.venv\Scripts\launchframe.exe build D:\video-projects\my-product
 ```
 
 After review, upload the generated local files to the destination website using the organization's normal publishing process.
@@ -209,9 +209,9 @@ Set the environment variables, log in to Azure, and run:
 export VIDEO_PROJECT_ROOT=/path/to/product-projects
 az login
 az account set --subscription "<subscription-id>"
-./.venv/bin/ai-video scan /path/to/product-projects/my-product
-./.venv/bin/ai-video inspect /path/to/product-projects/my-product
-./.venv/bin/ai-video build /path/to/product-projects/my-product
+./.venv/bin/launchframe scan /path/to/product-projects/my-product
+./.venv/bin/launchframe inspect /path/to/product-projects/my-product
+./.venv/bin/launchframe build /path/to/product-projects/my-product
 ```
 
 ## Pi integration
@@ -245,14 +245,14 @@ The project extension provides these workflow commands:
 /video-model-help
 ```
 
-The commands call the local `ai-video` CLI and retain the deterministic build pipeline. `/video-draft` asks the selected CodeMie model to write a reviewable draft under `.video-work/`; `/video-build` uses that approved draft. Pi is used for SSO, model selection, interaction, and LLM/Vision orchestration; it is not required for direct CLI or MCP use. Publishing is intentionally outside this project.
+The commands call the local `launchframe` CLI and retain the deterministic build pipeline. `/video-draft` asks the selected CodeMie model to write a reviewable draft under `.video-work/`; `/video-build` uses that approved draft. Pi is used for SSO, model selection, interaction, and LLM/Vision orchestration; it is not required for direct CLI or MCP use. Publishing is intentionally outside this project.
 
 ## Local GUI
 
 Start the Windows GUI:
 
 ```powershell
-.\.venv\Scripts\ai-video-gui.exe
+.\.venv\Scripts\launchframe-gui.exe
 ```
 
 The GUI provides product directory selection, automatic resource scanning, Azure login/Subscription/Speech Resource/Voice selection, CodeMie SSO, model selection, independent Draft and PPT prompt editors with load/save controls, Vision analysis, Draft editing, PPT/PDF/audio/subtitle/video review, and Vision/Draft/PPT approvals. Pi runs as an internal background service and is started automatically when needed. `Progress details` shows backend status and logs; the red `Exit` button stops the local service and Pi. Use `debug.bat` when the backend console should remain visible. It generates deliverables locally; publishing is intentionally outside this project.
@@ -260,7 +260,7 @@ The GUI provides product directory selection, automatic resource scanning, Azure
 For the browser-based local GUI:
 
 ```powershell
-.\.venv\Scripts\ai-video-web.exe `
+.\.venv\Scripts\launchframe-web.exe `
   --host 127.0.0.1 `
   --port 8875 `
   --websocket-port 8876
@@ -278,9 +278,9 @@ unblock-scripts.bat
 
 This handles common `RemoteSigned` policies. `AllSigned`, AppLocker, and WDAC policies still require a company code-signing certificate or IT Security approval. If the Web GUI ports are occupied, run `stop.ps1` and then `run.ps1`; the launcher automatically finds another localhost port pair.
 
-## GitLab CI/CD
+## GitHub CI/CD
 
-The project includes `.gitlab-ci.yml` with these stages:
+The project includes `.github-ci.yml` with these stages:
 
 ```text
 validate → test → build → Pages → manual integration → manual Release
@@ -295,16 +295,16 @@ CI does not call Azure Speech, LLM, Vision, or upload product videos automatical
 Start the MCP server on Windows:
 
 ```powershell
-.\.venv\Scripts\ai-video-mcp.exe
+.\.venv\Scripts\launchframe-mcp.exe
 ```
 
 Start it on Linux/macOS:
 
 ```bash
-./.venv/bin/ai-video-mcp
+./.venv/bin/launchframe-mcp
 ```
 
-An MCP host such as Pi, Claude Desktop, or an internal MCP client can launch this executable over stdio. Pi is optional; the `ai-video` CLI is sufficient for direct execution.
+An MCP host such as Pi, Claude Desktop, or an internal MCP client can launch this executable over stdio. Pi is optional; the `launchframe` CLI is sufficient for direct execution.
 
 ## MCP tools
 

@@ -91,7 +91,7 @@
 
 ### 后续可选工作
 
-11. **`.gitlab-ci.yml` 添加 macOS Runner**
+11. **`.github-ci.yml` 添加 macOS Runner**
    - 在现有 CI 中增加 macOS job，验证 LibreOffice 渲染路径
 
 12. **macOS 原生 GUI（可选）

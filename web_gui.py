@@ -53,7 +53,7 @@ _MIN_FRAME_INTERVAL = 5.0   # never faster than 1 frame per 5 s
 
 ROOT = Path(__file__).parent
 WEB_ROOT = ROOT / "web"
-TOKEN_SERVICE = "ai-video-generation"
+TOKEN_SERVICE = "launchframe"
 _CLIENT_DISCONNECT_CODES = {995, 10053, 10054, 104}  # Win32 abort/reset, WSAECONNABORTED/RESET, POSIX reset
 
 
@@ -966,7 +966,7 @@ def vision_input_pages(config) -> list[dict[str, object]]:
     pptx_sources = [config.presentation] if config.presentation and config.presentation.suffix.lower() in {".pptx", ".ppt"} and config.presentation.exists() else []
     pptx_sources.extend(path for path in getattr(config, "presentation_sources", ()) if path.suffix.lower() in {".pptx", ".ppt"} and path.exists())
     for source in renderable_content + pptx_sources:
-        temp_context = tempfile.TemporaryDirectory(prefix="ai-video-render-") if source.suffix.lower() != ".pdf" else None
+        temp_context = tempfile.TemporaryDirectory(prefix="launchframe-render-") if source.suffix.lower() != ".pdf" else None
         temp_dir = Path(temp_context.name) if temp_context else source.parent
         try:
             pdf = source if source.suffix.lower() == ".pdf" else _convert_to_pdf(source, temp_dir)
@@ -1063,10 +1063,14 @@ def project_arg(query: dict[str, list[str]]) -> str:
 
 def validate_provider_token(provider: str, token: str) -> dict[str, object]:
     if provider == "dial":
-        base = os.environ.get("DIAL_BASE_URL", "https://ai-proxy.lab.epam.com").rstrip("/")
+        base = os.environ.get("DIAL_BASE_URL", "").rstrip("/")
+        if not base:
+            raise ValueError("Set DIAL_BASE_URL before validating a DIAL token.")
         request = urllib.request.Request(f"{base}/openai/models", headers={"Api-Key": token})
     elif provider == "elitea":
-        base = os.environ.get("ELITEA_BASE_URL", "https://next.elitea.ai").rstrip("/")
+        base = os.environ.get("ELITEA_BASE_URL", "").rstrip("/")
+        if not base:
+            raise ValueError("Set ELITEA_BASE_URL before validating an ELITEA token.")
         request = urllib.request.Request(f"{base}/llm/v1/models", headers={"Authorization": f"Bearer {token}"})
     else:
         raise ValueError("Unsupported token provider")

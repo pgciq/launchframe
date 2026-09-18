@@ -7,11 +7,11 @@ import type { ExtensionAPI } from "@earendil-works/pi-coding-agent";
 const extensionRoot = resolve(dirname(fileURLToPath(import.meta.url)), "../..");
 
 function cliPath(): string {
-  const windows = join(extensionRoot, ".venv", "Scripts", "ai-video.exe");
-  const posix = join(extensionRoot, ".venv", "bin", "ai-video");
+  const windows = join(extensionRoot, ".venv", "Scripts", "launchframe.exe");
+  const posix = join(extensionRoot, ".venv", "bin", "launchframe");
   if (process.platform === "win32" && existsSync(windows)) return windows;
   if (existsSync(posix)) return posix;
-  return process.platform === "win32" ? "ai-video.exe" : "ai-video";
+  return process.platform === "win32" ? "launchframe.exe" : "launchframe";
 }
 
 async function runCli(args: string[], ctx: any, extraEnv: Record<string, string> = {}): Promise<void> {
@@ -26,7 +26,7 @@ async function runCli(args: string[], ctx: any, extraEnv: Record<string, string>
   child.stderr.on("data", (chunk) => { output += chunk.toString(); });
   await new Promise<void>((resolvePromise, reject) => {
     child.on("error", reject);
-    child.on("close", (code) => code === 0 ? resolvePromise() : reject(new Error(output || `ai-video exited with ${code}`)));
+    child.on("close", (code) => code === 0 ? resolvePromise() : reject(new Error(output || `launchframe exited with ${code}`)));
   });
   ctx.ui.notify(output.trim() || "Video operation completed.", "info");
 }

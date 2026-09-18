@@ -208,4 +208,4 @@ The MCP server accepts only project directories under `VIDEO_PROJECT_ROOT`:
 export VIDEO_PROJECT_ROOT=/path/to/product-projects
 ```
 
-It rejects paths outside that root and does not use shell interpolation for paths. Do not place secrets inside a product resource directory. Azure and GitLab credentials must come from the environment or CI/CD variables.
+It rejects paths outside that root and does not use shell interpolation for paths. Do not place secrets inside a product resource directory. Azure and GitHub credentials must come from the environment or CI/CD variables.

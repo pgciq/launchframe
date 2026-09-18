@@ -158,7 +158,7 @@ def render_presentation_pdf(presentation: Path, output_dir: Path, cancel_check=N
     """Render the reviewed PPT to PDF before speech/video generation."""
     output_dir.mkdir(parents=True, exist_ok=True)
     pdf = output_dir / "presentation.pdf"
-    with tempfile.TemporaryDirectory(prefix="ai-video-pdf-") as temp_name:
+    with tempfile.TemporaryDirectory(prefix="launchframe-pdf-") as temp_name:
         temp = Path(temp_name)
         renderer = os.getenv("VIDEO_RENDERER", "auto").lower()
         use_powerpoint = renderer == "powerpoint" or (renderer == "auto" and powerpoint.available())
@@ -209,7 +209,7 @@ def build_video(
         pdftoppm = command("pdftoppm")
     output_dir.mkdir(parents=True, exist_ok=True)
     slide_count = 0
-    with tempfile.TemporaryDirectory(prefix="ai-video-") as temp_name:
+    with tempfile.TemporaryDirectory(prefix="launchframe-") as temp_name:
         temp = Path(temp_name)
         primary_source = primary_audio
         secondary_source = secondary_audio

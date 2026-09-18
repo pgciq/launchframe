@@ -11,15 +11,15 @@
     "speech_resource_id": null
   },
   "content_generation": {
-    "provider": "agnes",
-    "model": "agnes-2.5-flash",
+    "provider": "openai-compatible",
+    "model": "gpt-4o-mini",
     "base_url": "https://api.openai.com/v1",
     "require_review": true
   },
   "vision_analysis": {
     "enabled": true,
     "provider": "openai-compatible",
-    "model": "agnes-2.5-flash",
+    "model": "gpt-4o-mini",
     "base_url": "https://api.openai.com/v1",
     "max_image_bytes": 5000000
   },

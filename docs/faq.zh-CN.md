@@ -111,7 +111,7 @@ CLI 及大部分流程在 Linux 和 macOS 上可以运行，但存在以下限�
 
 | 功能 | Linux / macOS |
 |---|---|
-| CLI（`ai-video scan/inspect/build`）| ✅ 完全支持 |
+| CLI（`launchframe scan/inspect/build`）| ✅ 完全支持 |
 | Web GUI | ✅ 支持 |
 | PowerPoint 渲染 | ✅ Windows COM 或 macOS PowerPoint 自动化；LibreOffice 作为回退 |
 | DOCX/PPTX/XLSX Vision 渲染（Word/PowerPoint/Excel）| ✅ macOS 优先使用已安装的 Office；LibreOffice 作为备用方案 |
@@ -329,7 +329,7 @@ Token 通过 `keyring` 存储在 **Windows 凭据管理器**中，不会写入�
 
 通过 CLI：
 ```powershell
-ai-video build D:\projects\my-product  # 完整运行
+launchframe build D:\projects\my-product  # 完整运行
 ```
 CLI 始终运行到完成；部分停止需要在 API 直接调用时使用 `stop_after` 参数。
 

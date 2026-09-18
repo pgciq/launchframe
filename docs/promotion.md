@@ -15,7 +15,7 @@ Generate media locally. Do not commit the resulting MP4, WAV, PDF, or PPTX to Gi
 Store the approved demo video in one of:
 
 - the company's internal video/media platform;
-- GitLab Package Registry or Release assets;
+- GitHub Package Registry or Release assets;
 - an approved internal file share.
 
 The Pages documentation should contain a link to the approved video or an embed URL, not a large binary file. The link can be updated without changing the source repository.

@@ -100,7 +100,7 @@ class VideoApp(tk.Tk):
         self._start_process(["build", self.project.get()])
 
     def _start_process(self, arguments: list[str]) -> None:
-        cli = Path(sys.executable).with_name("ai-video.exe" if os.name == "nt" else "ai-video")
+        cli = Path(sys.executable).with_name("launchframe.exe" if os.name == "nt" else "launchframe")
         if not cli.exists():
             cli = Path(sys.executable)
             arguments = ["-m", "cli", *arguments]

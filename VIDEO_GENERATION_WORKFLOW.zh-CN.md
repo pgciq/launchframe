@@ -267,15 +267,15 @@ Chinese:  zh-CN-YunyangNeural
 Rate:     0%
 ```
 
-### 4.2 GitLab Token
+### 4.2 GitHub Token
 
 Release 上传和 Pages 资源同步需要：
 
 ```text
-GITLAB_TOKEN
+GITHUB_TOKEN
 ```
 
-建议在 GitLab CI/CD Variables 中配置为：
+建议在 GitHub CI/CD Variables 中配置为：
 
 - Masked；
 - Protected；

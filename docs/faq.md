@@ -111,7 +111,7 @@ The CLI and most of the pipeline work on Linux and macOS. Limitations apply:
 
 | Feature | Linux / macOS |
 |---|---|
-| CLI (`ai-video scan/inspect/build`) | ✅ Fully supported |
+| CLI (`launchframe scan/inspect/build`) | ✅ Fully supported |
 | Web GUI | ✅ Supported |
 | PowerPoint rendering | ✅ Windows COM or macOS PowerPoint automation; LibreOffice remains the fallback |
 | DOCX/PPTX/XLSX Vision rendering via Office | ✅ Uses Word/Excel/PowerPoint automation when available; LibreOffice remains the fallback |
@@ -135,7 +135,7 @@ Set `VIDEO_RENDERER=libreoffice` on Linux/macOS to force the LibreOffice + Poppl
 | Video rendering | No |
 | Publishing | Never — manual upload only |
 
-DIAL additionally requires **company VPN** for all API calls.
+DIAL additionally requires **provider network access** for all API calls.
 
 ---
 
@@ -327,7 +327,7 @@ Yes. Edit/save the PPT prompt if needed, click **Build PPT**, and stop there. Th
 
 Via CLI:
 ```powershell
-ai-video build D:\projects\my-product  # full run
+launchframe build D:\projects\my-product  # full run
 ```
 The CLI always runs to completion; partial stops require the `stop_after` parameter in direct API calls.
 

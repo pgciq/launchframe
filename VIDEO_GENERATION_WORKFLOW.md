@@ -160,7 +160,7 @@ The pipeline discovers the Speech resource, retrieves its key only in memory, an
 Start the MCP server:
 
 ```bash
-./.venv/bin/ai-video-mcp
+./.venv/bin/launchframe-mcp
 ```
 
 ## Build lifecycle
@@ -242,7 +242,7 @@ Publishing requires:
 
 ```bash
 export VIDEO_MCP_ALLOW_PUBLISH=true
-export GITLAB_TOKEN="<masked-token>"
+export GITHUB_TOKEN="<masked-token>"
 export VIDEO_GITLAB_PROJECT_ID="<project-id>"
 export VIDEO_RELEASE_HOST="https://github.com"
 export VIDEO_RELEASE_REF="<source-ref>"
@@ -266,15 +266,15 @@ The publish operation is rejected unless `VIDEO_MCP_ALLOW_PUBLISH=true`.
 
 ## Security and operational rules
 
-- Keep Azure and GitLab tokens outside resource directories.
+- Keep Azure and GitHub tokens outside resource directories.
 - Keep publishing disabled by default.
 - Keep product paths inside `VIDEO_PROJECT_ROOT`.
 - Do not use shell interpolation for resource paths.
 - Review generated media before publication.
 - Use immutable semantic versions for Releases.
 - Keep generated videos out of Git history.
-- Store large media in GitLab Package Registry, object storage, or an internal artifact service.
+- Store large media in GitHub Package Registry, object storage, or an approved artifact storage.
 
 ## Migration from Dolphins MCP Toolkit
 
-The original `vendor/azure-mcp/` directory remains the validated reference implementation for the current internal presentation. This standalone project provides the independent MCP boundary and resource contract. Migration work should progressively move the generic speech, subtitle, renderer, and Release logic here while keeping product-specific deck templates and narration resources in each product directory.
+The original `vendor/azure-mcp/` directory remains the validated reference implementation for the current reference presentation. This standalone project provides the independent MCP boundary and resource contract. Migration work should progressively move the generic speech, subtitle, renderer, and Release logic here while keeping product-specific deck templates and narration resources in each product directory.

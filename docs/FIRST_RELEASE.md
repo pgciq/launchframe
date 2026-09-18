@@ -94,7 +94,7 @@ Enable Vision image analysis
 Check and save configuration
 ```
 
-`Model details` loads the live multi-model catalog, including provider channel, pricing, input type, Vision/Reasoning/Tools capabilities, context window, and max output. The active model is highlighted. `Refresh usage` loads the current provider usage/quota information. DIAL requires the company VPN and a valid token entered in the GUI. ELITEA requires a valid token. Tokens are kept in the local Pi process environment only and are not written to project files.
+`Model details` loads the live multi-model catalog, including provider channel, pricing, input type, Vision/Reasoning/Tools capabilities, context window, and max output. The active model is highlighted. `Refresh usage` loads the current provider usage/quota information. DIAL requires the provider network access and a valid token entered in the GUI. ELITEA requires a valid token. Tokens are kept in the local Pi process environment only and are not written to project files.
 
 Pi is an internal background service. It starts automatically when a product resource directory is loaded. Pi status is shown in the header of the Product resources section. No manual Pi start or stop is required.
 

@@ -198,7 +198,7 @@ else {
     & $venvPython -m pip install --upgrade pip
     if ($LASTEXITCODE -ne 0) { $errors.Add("Could not upgrade pip.") }
     & $venvPython -m pip install -e $root
-    if ($LASTEXITCODE -ne 0) { $errors.Add("Could not install the LaunchFrame project. Stop running ai-video processes and retry setup.ps1.") }
+    if ($LASTEXITCODE -ne 0) { $errors.Add("Could not install the LaunchFrame project. Stop running launchframe processes and retry setup.ps1.") }
     $azureVendor = Join-Path $root "vendor\azure-mcp"
     if (Test-Path (Join-Path $azureVendor "pyproject.toml")) {
         & $venvPython -m pip install -e $azureVendor

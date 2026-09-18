@@ -49,7 +49,7 @@ class WebGuiApiContractTests(unittest.TestCase):
         self.assertIn('aria-expanded="false"', html)
         self.assertIn('/api/pi/internal-providers', (Path(__file__).parents[1] / "web_gui.py").read_text(encoding="utf-8"))
         self.assertIn('function projectStorageKey(root)', html)
-        self.assertIn('ai-video:last-project:${String(root || location.origin)', html)
+        self.assertIn('launchframe:last-project:${String(root || location.origin)', html)
         self.assertIn('loadWorkspaceRoot().then(async workspace => { activeProjectStorageKey = projectStorageKey(workspace.install_root || workspace.root)', html)
         self.assertIn('PVF_INSTALL_ROOT', (Path(__file__).parents[1] / "web_gui.py").read_text(encoding="utf-8"))
 
