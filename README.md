@@ -335,7 +335,7 @@ Vision is enabled by default when a Vision-capable model and Vision inputs are a
 }
 ```
 
-In the Web GUI, Vision uses the selected authenticated CodeMie Vision model. Direct CLI/MCP execution can use `VIDEO_VISION_API_KEY`, `OPENAI_API_KEY`, or `AZURE_OPENAI_API_KEY`. The analysis is passed to the content stage so image facts can influence the outline without putting raw image bytes into the text prompt.
+In the Web GUI, Vision uses the selected authenticated OpenAI/OpenAI-compatible or optional provider model. Direct CLI/MCP execution can use `VIDEO_VISION_API_KEY`, `OPENAI_API_KEY`, or `AZURE_OPENAI_API_KEY`. The analysis is passed to the content stage so image facts can influence the outline without putting raw image bytes into the text prompt.
 
 ## LLM content stage
 

@@ -52,7 +52,7 @@ Practical guidance:
 | Service | Required for | Notes |
 |---|---|---|
 | **Azure AI Speech** | Audio synthesis, subtitles, video | Mandatory. No Speech resource = no audio, subtitles, or video. PPT and PDF review still work. |
-| **LLM Provider** (CodeMie / DIAL / ELITEA) | Draft generation, Vision analysis | Mandatory for Draft. Vision is optional. |
+| **LLM Provider** (OpenAI/OpenAI-compatible by default; optional providers) | Draft generation, Vision analysis | Mandatory for Draft. Vision is optional. |
 | **Pi** | LLM and Vision orchestration in the Web GUI | Auto-starts when a directory is loaded. Not required for direct CLI use. |
 
 None of these services are created by LaunchFrame. Azure Speech resources must be provisioned by an authorized Azure administrator before use.

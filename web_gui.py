@@ -1652,7 +1652,7 @@ class Handler(BaseHTTPRequestHandler):
                 result = codemie_logout(project)
                 return json_response(self, {"status": "logged_out", "pi": result, **PI.status()})
             if parsed.path == "/api/pi/usage":
-                provider = str(body.get("provider", "codemie")).strip()
+                provider = str(body.get("provider", "openai")).strip()
                 if provider in PI_PROVIDER_IDS:
                     inventory = pi_internal_provider_status() + pi_extension_provider_status()
                     item = next(item for item in inventory if item["id"] == provider)
@@ -1698,7 +1698,7 @@ class Handler(BaseHTTPRequestHandler):
                 return json_response(self, {**result, "status": PI.status()})
             if parsed.path == "/api/pi/model":
                 PI.start(project)
-                provider = str(body.get("provider", "codemie"))
+                provider = str(body.get("provider", "openai"))
                 if provider in {"dial", "elitea"} and not hydrate_provider_token(provider):
                     raise ValueError(f"{provider.upper()} token is not configured. Validate the token first.")
                 model_id = str(body.get("model_id", "")).strip()
@@ -1708,7 +1708,7 @@ class Handler(BaseHTTPRequestHandler):
                 return json_response(self, {"selected": model_id, "provider": provider, "pi": result})
             if parsed.path == "/api/pi/draft":
                 PI.start(project)
-                provider = str(body.get("provider", "codemie")).strip()
+                provider = str(body.get("provider", "openai")).strip()
                 if provider in {"dial", "elitea"} and not PI.provider_env.get({"dial": "DIAL_API_KEY", "elitea": "ELITEA_API_TOKEN"}[provider]):
                     raise ValueError(f"{provider.upper()} token is not authenticated. Validate the token first.")
                 if provider in PI_PROVIDER_IDS:

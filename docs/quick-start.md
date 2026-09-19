@@ -32,7 +32,7 @@ Creating Azure resources is intentionally outside LaunchFrame. The project does 
 |------|--------|--------------|
 | 1 | Select product resource folder | Access boundary set; auto-scan; Pi starts |
 | 2 | Azure login | Subscription → Speech resource → Voice catalog |
-| 3 | Provider login + model | CodeMie SSO / DIAL token / ELITEA token; save config |
+| 3 | Provider login + model | OpenAI/OpenAI-compatible API key by default; optional provider tokens; save config |
 | 4 | **Vision** _(optional)_ | Pi Vision LLM analyzes images → review → **Approve Vision** |
 | 5 | **Draft** | Customize/load/save the Draft prompt → Pi LLM generates outline + EN/ZH narration → edit → **Approve Draft** |
 | 6 | **Build PPT** | Customize/load/save the PPT prompt → python-pptx → PPTX; PowerPoint COM/macOS PowerPoint automation/LibreOffice → PDF → review |
