@@ -262,5 +262,5 @@ def build_video(
         dual = output_dir / "presentation-dual.mp4"
         run([ffmpeg, "-y", "-i", str(visual), "-i", str(primary_source), "-i", str(secondary_source), "-map", "0:v:0", "-map", "1:a:0", "-map", "2:a:0", "-c:v", "copy", "-c:a", "aac", "-b:a", "128k", "-metadata:s:a:0", f"language={primary_language}", "-metadata:s:a:1", f"language={secondary_language}", "-shortest", str(dual)], cancel_check)
         for name, audio, language in (("presentation-primary.mp4", primary_source, primary_language), ("presentation-secondary.mp4", secondary_source, secondary_language)): 
-            run([ffmpeg, "-y", "-i", str(visual), "-i", str(audio), "-map", "0:v:0", "-map", "1:a:0", "-c:v", "copy", "-c:a", "copy", "-metadata:s:a:0", f"language={language}", "-shortest", str(output_dir / name)], cancel_check)
+            run([ffmpeg, "-y", "-i", str(visual), "-i", str(audio), "-map", "0:v:0", "-map", "1:a:0", "-c:v", "copy", "-c:a", "aac", "-b:a", "128k", "-metadata:s:a:0", f"language={language}", "-shortest", str(output_dir / name)], cancel_check)
     return {"output_dir": str(output_dir), "slides": slide_count, "duration_seconds": duration}

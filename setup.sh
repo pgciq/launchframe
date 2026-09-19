@@ -329,10 +329,27 @@ fi
 
 "$PYTHON" -m venv "$ROOT/.venv"
 VENV_PYTHON="$ROOT/.venv/bin/python"
-"$VENV_PYTHON" -m pip install --upgrade pip
-"$VENV_PYTHON" -m pip install -e "$ROOT"
+if ! "$VENV_PYTHON" -m pip --version >/dev/null 2>&1; then
+  "$VENV_PYTHON" -m ensurepip --upgrade
+fi
+if ! "$VENV_PYTHON" - <<'PY2'
+import importlib.metadata
+try: importlib.metadata.version("product-video-foundry")
+except importlib.metadata.PackageNotFoundError: raise SystemExit(1)
+PY2
+then
+  "$VENV_PYTHON" -m pip install -e "$ROOT"
+else echo "[OK] product-video-foundry is already installed"
+fi
 if [[ -f "$ROOT/vendor/azure-mcp/pyproject.toml" ]]; then
-  "$VENV_PYTHON" -m pip install -e "$ROOT/vendor/azure-mcp"
+  if ! "$VENV_PYTHON" - <<'PY2'
+import importlib.metadata
+try: importlib.metadata.version("azure-mcp")
+except importlib.metadata.PackageNotFoundError: raise SystemExit(1)
+PY2
+  then "$VENV_PYTHON" -m pip install -e "$ROOT/vendor/azure-mcp"
+  else echo "[OK] azure-mcp is already installed"
+  fi
 fi
 
 if [[ -n "$PROJECT_ROOT" ]]; then

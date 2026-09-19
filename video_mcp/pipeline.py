@@ -81,8 +81,12 @@ def build_project(config: ProjectConfig, stop_after: str | None = None, cancel_c
     presentation = config.presentation or work / "generated-presentation.pptx"
     state.update("azure_resource_discovery")
     vision_report = work / "vision-analysis.json"
+    draft_path = work / "content-draft.json"
     if config.vision.enabled and vision_report.exists():
         vision_results = json.loads(vision_report.read_text(encoding="utf-8"))
+    elif draft_path.exists():
+        # Continue from a draft created by a non-vision model without rerunning Vision.
+        vision_results = []
     else:
         # 如果项目中有视频文件且没有预存的 vision 分析结果，自动提取关键帧
         has_video = getattr(config, "video_files", ()) and config.vision.enabled
@@ -113,7 +117,6 @@ def build_project(config: ProjectConfig, stop_after: str | None = None, cancel_c
     primary_narration = config.narration_primary
     secondary_narration = config.narration_secondary
     state.update("content_draft")
-    draft_path = work / "content-draft.json"
     if draft_path.exists():
         draft = _load_existing_draft(draft_path)
     else:
